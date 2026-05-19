@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>LEXIA_MX | Espacio Experimental - Abogado Virtual</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="/static/css/experimental.css">
+</head>
+<body>
+
+    <div class="header">
+        <div class="container-mobile">
+            <div class="header-row">
+                <a href="/" class="btn-back"><i class="fas fa-arrow-left"></i></a>
+                <h1 class="title"><span class="title-white">LEXIA</span><span class="title-gold">_MX</span></h1>
+                <div class="spacer"></div>
+            </div>
+            <p class="subtitle">🧪 Espacio Experimental · Abogado Virtual en Entrenamiento</p>
+        </div>
+    </div>
+
+    <main class="container-mobile">
+        
+        <div class="alert-info">
+            <i class="fas fa-flask mr-2"></i>
+            Versión beta 
+        </div>
+
+        <!-- FORMULARIO -->
+        <div class="form-card">
+            <h2 class="form-title">👤 Tus datos</h2>
+            
+            <div class="form-group">
+                <label>Nombre Completo *</label>
+                <input type="text" id="nombre" placeholder="Ej. Braulio Flores">
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Ocupación *</label>
+                    <select id="ocupacion">
+                        <option value="Litigante">Litigante</option>
+                        <option value="Estudiante">Estudiante</option>
+                        <option value="Otro">Otro / Particular</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Estado *</label>
+                    <select id="estado">
+                        <option value="Aguascalientes">Aguascalientes</option>
+                        <option value="Baja California">Baja California</option>
+                        <option value="Baja California Sur">Baja California Sur</option>
+                        <option value="Campeche">Campeche</option>
+                        <option value="Chiapas">Chiapas</option>
+                        <option value="Chihuahua">Chihuahua</option>
+                        <option value="Ciudad de México">Ciudad de México</option>
+                        <option value="Coahuila">Coahuila</option>
+                        <option value="Colima">Colima</option>
+                        <option value="Durango">Durango</option>
+                        <option value="Estado de México">Estado de México</option>
+                        <option value="Guanajuato">Guanajuato</option>
+                        <option value="Guerrero">Guerrero</option>
+                        <option value="Hidalgo">Hidalgo</option>
+                        <option value="Jalisco">Jalisco</option>
+                        <option value="Michoacán">Michoacán</option>
+                        <option value="Morelos">Morelos</option>
+                        <option value="Nayarit">Nayarit</option>
+                        <option value="Nuevo León">Nuevo León</option>
+                        <option value="Oaxaca">Oaxaca</option>
+                        <option value="Puebla">Puebla</option>
+                        <option value="Querétaro">Querétaro</option>
+                        <option value="Quintana Roo" selected>Quintana Roo</option>
+                        <option value="San Luis Potosí">San Luis Potosí</option>
+                        <option value="Sinaloa">Sinaloa</option>
+                        <option value="Sonora">Sonora</option>
+                        <option value="Tabasco">Tabasco</option>
+                        <option value="Tamaulipas">Tamaulipas</option>
+                        <option value="Tlaxcala">Tlaxcala</option>
+                        <option value="Veracruz">Veracruz</option>
+                        <option value="Yucatán">Yucatán</option>
+                        <option value="Zacatecas">Zacatecas</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>WhatsApp / Celular *</label>
+                    <input type="tel" id="telefono" maxlength="10" placeholder="10 dígitos">
+                </div>
+                <div class="form-group">
+                    <label>Correo Electrónico (Opcional)</label>
+                    <input type="email" id="correo" placeholder="ejemplo@correo.com">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Descripción del Caso Jurídico *</label>
+                <textarea id="consulta" rows="4" placeholder="Describe tu situación legal con detalle (mínimo 20 caracteres)..."></textarea>
+                <span id="charCount" class="char-count">0 caracteres</span>
+            </div>
+            
+            <button id="btnEnviar" class="btn-enviar">
+                <i class="fas fa-gavel mr-2"></i> Enviar consulta
+            </button>
+        </div>
+
+        <!-- SPINNER -->
+        <div id="spinner" class="spinner-container hidden">
+            <div class="spinner"></div>
+            <p class="spinner-text">Analizando tu caso...</p>
+        </div>
+
+        <!-- RESPUESTA -->
+        <div id="respuestaContainer" class="respuesta-card hidden">
+            <h3><i class="fas fa-robot mr-2"></i> Respuesta del Abogado Virtual</h3>
+            <div id="respuestaTexto" class="respuesta-texto"></div>
+        </div>
+
+        <!-- FEEDBACK -->
+        <div id="feedbackContainer" class="feedback-card hidden">
+            <p class="feedback-pregunta">¿Te fue útil esta respuesta?</p>
+            <div class="feedback-botones">
+                <button id="feedbackSi" class="feedback-btn feedback-si">
+                    <i class="fas fa-thumbs-up mr-1"></i> Sí, me sirvió
+                </button>
+                <button id="feedbackNo" class="feedback-btn feedback-no">
+                    <i class="fas fa-thumbs-down mr-1"></i> No, no me sirvió
+                </button>
+            </div>
+            <div id="feedbackTextoContainer" class="feedback-texto-container hidden">
+                <textarea id="feedbackTexto" rows="2" placeholder="¿Qué podría mejorar? (Opcional)"></textarea>
+                <button id="btnEnviarFeedback" class="btn-feedback">Enviar comentario</button>
+            </div>
+            <div id="feedbackGracias" class="feedback-gracias hidden">
+                <i class="fas fa-check-circle mr-1"></i> ¡Gracias por tu ayuda! Mejoraremos.
+            </div>
+        </div>
+
+        <!-- ERROR -->
+        <div id="errorContainer" class="error-card hidden">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            <span id="errorTexto"></span>
+        </div>
+
+    </main>
+
+    <footer class="footer">
+        <p>© 2026 LEXIA_MX · Espacio Experimental · Abogado Virtual en entrenamiento</p>
+    </footer>
+
+    <script src="/static/js/experimental.js"></script>
+</body>
+</html>

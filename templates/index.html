@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>LEX IA_MX | Litigio e Innovación Técnologica</title>
+
+    <!-- Framework de Estilos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Iconos de FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Nuestro CSS externo (ruta corregida) -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body class="bg-gray-50 font-sans">
+
+    <!-- =============================================
+         1. NAVEGACIÓN (HEADER)
+         ============================================= -->
+    <nav class="bg-blue-900 text-white p-6 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold tracking-tight">LEXIA <span class="text-amber-400">MX</span></h1>
+            
+            <p class="text-sm italic text-gray-400 tracking-widest text-right">
+                Litigio e Innovación Técnologica 
+        </div>
+    </nav>
+
+    <!-- =============================================
+         2. SECCIÓN HERO (BIENVENIDA)
+         ============================================= -->
+
+    <header class="py-16 bg-white border-b">
+        <div class="container mx-auto text-center px-4">
+        
+            <h2 class="text-3xl font-extrabold text-slate-800 mb-4">
+                HERRAMIENTAS JURÍDICAS CON INTELIGENCIA ARTIFICIAL
+            </h2>
+            
+            <p class="text-lg text-gray-500 max-w-3xl mx-auto">
+                Desarrolladas por Abogados e Ingenieros de Software
+                LEGAL TECH
+            </p>
+            
+            
+        </div>
+    </header>
+
+    <!-- =============================================
+         3. GRID DE TARJETAS (MÓDULOS)
+         ============================================= -->
+
+    <section class="py-12 container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+
+           
+                        <!-- TARJETA 1: JURISPRUDENCIAS -->
+                         
+
+            <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 card-hover flex flex-col justify-between">
+                <div>
+                    <div class="text-indigo-600 mb-4 text-3xl"><i class="fas fa-magnifying-glass"></i></div>
+                    
+                    <h3 class="font-bold text-xl mb-2 text-slate-800">Consulta a Jurisprudencias Actuales</h3>
+                    
+                    <p class="text-gray-500 text-sm mb-6">
+                        Más de mil Tesis de la XII Época Organizadas y Sistematizadas con Inteligencia Artificial.
+                    </p>
+                </div>
+                
+                <a href="/jurisprudencias" class="btn-profesional">Acceder</a>
+            </div>
+
+            <!-- TARJETA 2: GENERADOR DE PROMPTS -->
+             
+            <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 card-hover flex flex-col justify-between">
+                <div>
+                    <div class="text-green-600 mb-4 text-3xl"><i class="fas fa-terminal"></i></div>
+                    
+                    <h3 class="font-bold text-xl mb-2 text-slate-800">Generador de Prompts</h3>
+                    
+                    <p class="text-gray-500 text-sm mb-6">
+                        Prompts Jurídicos elaborados con Inteligencia Artificial.
+                    </p>
+                </div>
+                
+                <a href="/prompts" class="btn-profesional">Iniciar</a>
+            </div>
+
+            <!-- TARJETA 3: ANALIZADOR SEMÁNTICO -->
+             
+
+            <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 card-hover flex flex-col justify-between">
+                <div>
+                    <div class="text-rose-600 mb-4 text-3xl"><i class="fas fa-file-signature"></i></div>
+                    
+                    <h3 class="font-bold text-xl mb-2 text-slate-800">Analizador Inteligente de Leyes </h3>
+                    
+                    <p class="text-gray-500 text-sm mb-6">
+                        Análisis Atómico (Semántico-Conceptual) de Leyes Procesales en México 
+                    </p>
+                </div>
+                
+                <a href="/analizador" class="btn-profesional">Analizar</a>
+            </div>
+
+            <!-- TARJETA 4: ESPACIO EXPERIMENTAL -->
+            
+
+            <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 card-hover flex flex-col justify-between">
+                <div>
+                    <div class="text-amber-500 mb-4 text-3xl"><i class="fas fa-scale-balanced"></i></div>
+                    
+                    <h3 class="font-bold text-xl mb-2 text-slate-800">Abogado Virtual</h3>
+                    
+                    <p class="text-gray-500 text-sm mb-6">
+                        Entrenamiento de un Agente IA para Consultas Legales especializadas.
+                    </p>
+                </div>
+                
+                <a href="/experimental" class="btn-profesional">Colaborar</a>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- =============================================
+         4. PIE DE PÁGINA
+         ============================================= -->
+
+    <footer class="bg-blue-900 text-gray-400 py-6 border-t border-slate-800">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center text-center md:text-left">
+                
+                <div>
+                    <h4 class="text-white font-bold text-md">LEXIAMX_PRO</h4>
+                    <p class="text-[11px] uppercase tracking-wider">Litigio con Inteligencia Artificial</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="flex justify-center space-x-6 text-lg">
+                        <a href="javascript:void(0)" onclick="avisoContacto()" class="hover:text-blue-400"><i class="fab fa-linkedin"></i></a>
+                        <a href="javascript:void(0)" onclick="avisoContacto()" class="hover:text-blue-400"><i class="fab fa-github"></i></a>
+                        <a href="javascript:void(0)" onclick="avisoContacto()" class="hover:text-blue-400"><i class="fas fa-envelope"></i></a>
+                    </div>
+                </div>
+
+                <div class="md:text-right">
+                    <p class="text-[10px]">© 2026 Todos los derechos reservados.</p>
+                </div>
+
+            </div>
+        </div>
+    </footer>
+
+    <!-- =============================================
+         5. BOTÓN WHATSAPP FLOTANTE
+         ============================================= -->
+    <a href="#" class="whatsapp-float" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <!-- Nuestro JS externo (ruta corregida) -->
+    <script src="/static/js/script.js"></script>
+
+</body>
+</html>

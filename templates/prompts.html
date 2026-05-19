@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Despacho IA | Generador de Prompts Jurídicos</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-gray-50 font-sans">
+
+    <!-- ========== NAVBAR ========== -->
+    <nav class="bg-blue-900 text-white p-6 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <a href="/" class="hover:text-amber-400 transition">
+                    <i class="fas fa-arrow-left text-amber-400 text-xl"></i>
+                </a>
+                <h1 class="text-2xl font-bold tracking-tight">DESPACHO <span class="text-amber-400">IA</span></h1>
+            </div>
+            <p class="hidden md:block text-sm italic text-gray-400 tracking-widest uppercase">Generador de Prompts Jurídicos</p>
+        </div>
+    </nav>
+
+    <!-- ========== HEADER ========== -->
+    <header class="py-12 bg-white border-b">
+        <div class="container mx-auto text-center px-4">
+            <h2 class="text-3xl font-extrabold text-slate-800 mb-3">Ingeniería de Prompts Jurídicos</h2>
+            <p class="text-gray-500 max-w-2xl mx-auto">
+                Transforma tus ideas legales en instrucciones precisas para IA bajo estándares de Derecho Mexicano.
+            </p>
+        </div>
+    </header>
+
+    <!-- ========== MAIN ========== -->
+    <main class="container mx-auto py-12 px-4 max-w-4xl">
+        
+        <!-- ÁREA DE ENTRADA -->
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            <div class="p-8">
+                <div class="mb-6">
+                    <label for="consulta" class="block text-sm font-bold text-blue-900 uppercase tracking-wider mb-2">
+                        <i class="fas fa-gavel mr-2 text-amber-500"></i> Descripción del Caso o Requerimiento
+                    </label>
+                    <textarea id="consulta" rows="5" 
+                        class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-gray-700 leading-relaxed shadow-inner"
+                        placeholder="Ej: Necesito una demanda de amparo indirecto contra un acto de autoridad que viola el artículo 16 constitucional..."></textarea>
+                    <div class="mt-2 flex justify-between items-center text-xs text-gray-400">
+                        <span>Mínimo 15 caracteres</span>
+                        <span id="charCount">0 caracteres</span>
+                    </div>
+                </div>
+
+                <button id="btnGenerar" 
+                    class="w-full bg-blue-900 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-800 transition shadow-lg flex items-center justify-center space-x-2 active:scale-95">
+                    <i class="fas fa-microchip"></i>
+                    <span>GENERAR PROMPT JURÍDICO</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- LOADING -->
+        <div id="loading" class="hidden mt-8 text-center animate-pulse">
+            <div class="flex items-center justify-center space-x-3 text-blue-900">
+                <i class="fas fa-circle-notch fa-spin text-3xl"></i>
+                <span class="font-bold tracking-widest uppercase">Procesando con IA Legal...</span>
+            </div>
+        </div>
+
+        <!-- RESULTADO -->
+        <div id="resultado" class="hidden mt-8 p-8 bg-white rounded-2xl border border-blue-200 shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-2 h-full bg-amber-400"></div>
+            
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-black text-blue-900 uppercase tracking-tighter">
+                    <i class="fas fa-file-alt mr-2 text-amber-500"></i> Prompt Estructurado
+                </h3>
+            </div>
+            
+            <div id="promptTexto" class="p-5 bg-gray-50 rounded-xl text-gray-800 font-mono text-sm leading-relaxed mb-6 border border-gray-100 whitespace-pre-wrap">
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 mb-8">
+                <button id="btnCopiar" class="flex-1 bg-blue-900 text-white py-3 rounded-lg hover:bg-blue-800 transition font-bold shadow-md flex items-center justify-center">
+                    <i class="fas fa-copy mr-2"></i> COPIAR PROMPT
+                </button>
+                
+                <button id="btnNuevaConsulta" type="button" class="flex-1 bg-white text-blue-900 border-2 border-blue-900 py-3 rounded-lg hover:bg-blue-50 transition font-bold flex items-center justify-center">
+                    <i class="fas fa-plus mr-2"></i> NUEVA CONSULTA
+                </button>
+            </div>
+
+            <div class="border-t border-gray-100 pt-6">
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <input type="text" id="inputFeedback" class="flex-1 p-3 text-sm border rounded-xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="¿Algún comentario adicional para mejorar?">
+                    <button id="btnEnviarFeedback" class="bg-amber-400 text-blue-900 px-8 py-3 rounded-xl font-black hover:bg-amber-500 transition">
+                        Guardar Feedback
+                    </button>
+                </div>
+                <p id="msgFeedbackOk" class="hidden mt-3 text-xs text-green-600 font-bold">
+                    ✓ Comentario registrado correctamente
+                </p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="bg-blue-900 text-gray-400 py-6 text-center text-[10px] mt-12">
+        <p>© 2026 Despacho IA - Generador de Prompts Jurídicos</p>
+    </footer>
+
+    <script>
+        // Elementos DOM
+        let idRegistroActual = null;
+        
+        const btnGenerar = document.getElementById('btnGenerar');
+        const inputConsulta = document.getElementById('consulta');
+        const charCount = document.getElementById('charCount');
+        const promptTexto = document.getElementById('promptTexto');
+        const resultadoDiv = document.getElementById('resultado');
+        const loadingDiv = document.getElementById('loading');
+        const btnFeedback = document.getElementById('btnEnviarFeedback');
+        const inputFeedback = document.getElementById('inputFeedback');
+        const msgOk = document.getElementById('msgFeedbackOk');
+        const btnNuevaConsulta = document.getElementById('btnNuevaConsulta');
+
+        // Contador de caracteres
+        inputConsulta.addEventListener('input', () => {
+            const len = inputConsulta.value.length;
+            charCount.textContent = `${len} caracteres`;
+            if (len < 15) {
+                charCount.classList.add('text-red-500');
+            } else {
+                charCount.classList.remove('text-red-500');
+            }
+        });
+
+        // Generar prompt
+        btnGenerar.addEventListener('click', async () => {
+            const consulta = inputConsulta.value.trim();
+            
+            if (consulta.length < 15) {
+                alert('Por favor, describe tu situación con al menos 15 caracteres para mayor precisión.');
+                return;
+            }
+
+            // Preparar UI
+            loadingDiv.classList.remove('hidden');
+            resultadoDiv.classList.add('hidden');
+            btnGenerar.disabled = true;
+            btnGenerar.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            try {
+                const response = await fetch('/prompts/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ texto: consulta })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.prompt) {
+                    promptTexto.textContent = data.prompt;
+                    idRegistroActual = data.id;
+                    
+                    loadingDiv.classList.add('hidden');
+                    resultadoDiv.classList.remove('hidden');
+                    resultadoDiv.scrollIntoView({ behavior: 'smooth' });
+                    
+                    // Resetear feedback
+                    btnFeedback.disabled = false;
+                    btnFeedback.textContent = 'Guardar Feedback';
+                    btnFeedback.classList.remove('bg-green-600');
+                    btnFeedback.classList.add('bg-amber-400');
+                    msgOk.classList.add('hidden');
+                    inputFeedback.value = '';
+                } else {
+                    throw new Error(data.error || 'Error en la respuesta del servidor');
+                }
+            } catch (error) {
+                loadingDiv.classList.add('hidden');
+                alert('Error: ' + error.message);
+            } finally {
+                btnGenerar.disabled = false;
+                btnGenerar.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        });
+
+        // Enviar feedback
+        btnFeedback.addEventListener('click', async () => {
+            const comentario = inputFeedback.value.trim();
+            if (!comentario || !idRegistroActual) {
+                alert('Escribe un comentario antes de guardar');
+                return;
+            }
+
+            btnFeedback.disabled = true;
+            btnFeedback.textContent = 'Enviando...';
+
+            try {
+                const response = await fetch('/prompts/api/feedback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        id: idRegistroActual, 
+                        feedback: comentario 
+                    })
+                });
+                
+                const res = await response.json();
+                
+                if (res.success) {
+                    msgOk.classList.remove('hidden');
+                    btnFeedback.textContent = '✓ Guardado';
+                    btnFeedback.classList.remove('bg-amber-400');
+                    btnFeedback.classList.add('bg-green-600');
+                    setTimeout(() => {
+                        msgOk.classList.add('hidden');
+                    }, 3000);
+                } else {
+                    throw new Error(res.error || 'Error al guardar');
+                }
+            } catch (e) {
+                alert('No se pudo guardar el comentario: ' + e.message);
+                btnFeedback.disabled = false;
+                btnFeedback.textContent = 'Reintentar';
+            }
+        });
+
+        // Copiar al portapapeles
+        document.getElementById('btnCopiar').addEventListener('click', () => {
+            const texto = promptTexto.textContent;
+            navigator.clipboard.writeText(texto).then(() => {
+                const btn = document.getElementById('btnCopiar');
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check mr-2"></i> COPIADO';
+                btn.classList.replace('bg-blue-900', 'bg-green-600');
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.classList.replace('bg-green-600', 'bg-blue-900');
+                }, 2000);
+            });
+        });
+
+        // Nueva consulta
+        btnNuevaConsulta.addEventListener('click', () => {
+            inputConsulta.value = '';
+            resultadoDiv.classList.add('hidden');
+            idRegistroActual = null;
+            charCount.textContent = '0 caracteres';
+            inputConsulta.focus();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+
+</body>
+</html>
