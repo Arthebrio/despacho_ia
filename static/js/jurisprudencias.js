@@ -1,309 +1,323 @@
-// ============================================
-// LEXIA_MX - JURISPRUDENCIAS
-// ============================================
-
-let todasLasTesis = [];
-let tesisFiltradas = [];
-let tesisSeleccionada = null;
-let tooltipTimeout = null;
-let tooltipActivo = null;
-
-// Elementos DOM
-const listadoContainer = document.getElementById('listadoContainer');
-const detalleContainer = document.getElementById('detalleContainer');
-const detalleCard = document.getElementById('detalleCard');
-const botonesDetalle = document.getElementById('botonesDetalle');
-const contadorDiv = document.getElementById('contadorResultados');
-const filtroTipo = document.getElementById('filtroTipo');
-const filtroMateria = document.getElementById('filtroMateria');
-const filtroBusqueda = document.getElementById('filtroBusqueda');
-const btnCerrarDetalle = document.getElementById('btnCerrarDetalle');
-const btnGuardarPDF = document.getElementById('btnGuardarPDF');
-
-// Utilería
-function escapeHtml(texto) {
-    if (!texto) return '';
-    const div = document.createElement('div');
-    div.textContent = texto;
-    return div.innerHTML;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-function limpiarTexto(texto) {
-    if (!texto) return 'No disponible';
-    return texto.replace(/\n/g, '<br>');
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #f5f7fb;
 }
 
-function formatearFecha(fechaStr) {
-    if (!fechaStr) return 'Fecha N/A';
-    const partes = fechaStr.match(/(\d{1,2})\s+de\s+(\w+)\s+de\s+(\d{4})/);
-    if (partes) return `${partes[1]}/${partes[2].substring(0,3)}/${partes[3]}`;
-    return fechaStr;
+.container-mobile {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 12px;
 }
 
-// Cargar tesis
-async function cargarTesis() {
-    try {
-        const response = await fetch('/jurisprudencias/api/todas');
-        const data = await response.json();
-        if (data.success) {
-            todasLasTesis = data.tesis;
-            todasLasTesis.sort((a, b) => new Date(b.fecha_publicacion) - new Date(a.fecha_publicacion));
-            filtrarTesis();
-        } else {
-            throw new Error(data.error);
-        }
-    } catch (error) {
-        listadoContainer.innerHTML = '<div class="loading-state">❌ Error cargando datos</div>';
-        contadorDiv.innerHTML = '❌ Error de conexión';
-    }
+@media (min-width: 768px) {
+    .container-mobile { max-width: 768px; }
 }
 
-// Filtrar
-function filtrarTesis() {
-    const tipo = filtroTipo.value;
-    const materia = filtroMateria.value;
-    const busqueda = filtroBusqueda.value.toLowerCase().trim();
-    
-    tesisFiltradas = todasLasTesis.filter(t => {
-        if (tipo !== 'todas' && t.tipo !== tipo) return false;
-        if (materia !== 'todas' && t.materias && !t.materias.includes(materia)) return false;
-        if (busqueda) {
-            const rubroMatch = t.rubro?.toLowerCase().includes(busqueda);
-            const resumenMatch = t.resumen_ia?.toLowerCase().includes(busqueda);
-            if (!rubroMatch && !resumenMatch) return false;
-        }
-        return true;
-    });
-    
-    actualizarContador();
-    renderizarListado();
+/* Header */
+.header {
+    background: linear-gradient(135deg, #1e3a8a, #1e1b4b);
+    color: white;
+    padding: 16px 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-// Contador destacado
-function actualizarContador() {
-    const tipo = filtroTipo.value;
-    const materia = filtroMateria.value;
-    
-    let base = todasLasTesis.filter(t => {
-        if (tipo !== 'todas' && t.tipo !== tipo) return false;
-        if (materia !== 'todas' && t.materias && !t.materias.includes(materia)) return false;
-        return true;
-    });
-    
-    const totalJuris = base.filter(t => t.tipo === 'Jurisprudencia').length;
-    const totalAisl = base.filter(t => t.tipo === 'Aislada').length;
-    const materiaNombre = materia === 'todas' ? 'todas las materias' : `materia ${materia}`;
-    
-    if (tipo === 'Jurisprudencia') {
-        contadorDiv.innerHTML = `📊 <span>${tesisFiltradas.length}</span> jurisprudencias en ${materiaNombre}`;
-    } else if (tipo === 'Aislada') {
-        contadorDiv.innerHTML = `📊 <span>${tesisFiltradas.length}</span> tesis aisladas en ${materiaNombre}`;
-    } else {
-        const filtJuris = tesisFiltradas.filter(t => t.tipo === 'Jurisprudencia').length;
-        const filtAisl = tesisFiltradas.filter(t => t.tipo === 'Aislada').length;
-        if (filtJuris > 0 && filtAisl > 0) {
-            contadorDiv.innerHTML = `📊 <span>${filtJuris}</span> jurisprudencias en ${materiaNombre} · <span>${filtAisl}</span> tesis aisladas en ${materiaNombre}`;
-        } else if (filtJuris > 0) {
-            contadorDiv.innerHTML = `📊 <span>${filtJuris}</span> jurisprudencias en ${materiaNombre}`;
-        } else {
-            contadorDiv.innerHTML = `📊 <span>${filtAisl}</span> tesis aisladas en ${materiaNombre}`;
-        }
-    }
+.header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
-// Renderizar listado
-function renderizarListado() {
-    if (tesisFiltradas.length === 0) {
-        listadoContainer.innerHTML = '<div class="loading-state">🔍 No hay tesis con estos filtros</div>';
-        return;
-    }
-    
-    let html = '';
-    for (const t of tesisFiltradas) {
-        const badgeClass = t.tipo === 'Jurisprudencia' ? 'badge-jurisprudencia' : 'badge-aislada';
-        const materiaClass = `materia-${t.materias?.replace(/\s/g, '') || 'default'}`;
-        html += `
-            <div class="tesis-card" data-id="${t.id}" data-registro="${t.registro_digital}">
-                <div class="meta-line">
-                    <span>📌 ${t.registro_digital || 'N/A'}</span>
-                    <span class="${badgeClass}">${t.tipo === 'Jurisprudencia' ? '⚖️ Jurisprudencia' : '📄 Aislada'}</span>
-                    <span class="${materiaClass}">📚 ${t.materias || 'N/A'}</span>
-                    <span>📅 ${formatearFecha(t.fecha_publicacion)}</span>
-                </div>
-                <div class="rubro-text rubro-click">${escapeHtml(t.rubro) || 'Sin rubro'}</div>
-            </div>
-        `;
-    }
-    
-    listadoContainer.innerHTML = html;
-    
-    document.querySelectorAll('.tesis-card').forEach(card => {
-        const tdata = tesisFiltradas.find(t => t.id == card.dataset.id);
-        const rubroEl = card.querySelector('.rubro-click');
-        
-        // Un clic para abrir detalle
-        card.addEventListener('click', () => seleccionarTesis(tdata));
-        
-        // Tooltip en el rubro
-        if (rubroEl && tdata?.resumen_ia) {
-            rubroEl.addEventListener('mouseenter', (e) => {
-                tooltipTimeout = setTimeout(() => mostrarTooltip(e, tdata.resumen_ia), 400);
-            });
-            rubroEl.addEventListener('mouseleave', () => {
-                clearTimeout(tooltipTimeout);
-                ocultarTooltip();
-            });
-        }
-    });
+.btn-back {
+    color: #fbbf24;
+    font-size: 1.25rem;
+    transition: color 0.2s;
 }
 
-// Tooltip
-function mostrarTooltip(event, texto) {
-    if (tooltipActivo) {
-        tooltipActivo.remove();
-        tooltipActivo = null;
-    }
-    
-    const tooltip = document.createElement('div');
-    tooltip.className = 'tooltip-ai';
-    tooltip.innerHTML = `<div style="color:#fbbf24;font-size:10px;margin-bottom:4px;">🤖 Análisis IA</div><div>${escapeHtml(texto)}</div>`;
-    document.body.appendChild(tooltip);
-    tooltipActivo = tooltip;
-    
-    const x = Math.min(event.clientX + 15, window.innerWidth - tooltip.offsetWidth - 10);
-    const y = event.clientY - tooltip.offsetHeight - 10;
-    
-    tooltip.style.left = Math.max(10, x) + 'px';
-    tooltip.style.top = Math.max(10, y) + 'px';
-    setTimeout(() => tooltip.classList.add('visible'), 5);
+.btn-back:hover { color: #fcd34d; }
+
+.title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    letter-spacing: -0.5px;
 }
 
-function ocultarTooltip() {
-    if (tooltipActivo) {
-        tooltipActivo.classList.remove('visible');
-        setTimeout(() => {
-            if (tooltipActivo) tooltipActivo.remove();
-            tooltipActivo = null;
-        }, 150);
-    }
+.title-white { color: white; }
+.title-gold { color: #fbbf24; }
+
+.spacer { width: 24px; }
+
+.subtitle {
+    text-align: center;
+    font-size: 0.7rem;
+    color: #93c5fd;
+    margin-top: 6px;
 }
 
-// Seleccionar tesis
-async function seleccionarTesis(tesis) {
-    if (!tesis) return;
-    
-    detalleCard.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Cargando detalle...</div>';
-    detalleContainer.classList.remove('hidden');
-    botonesDetalle.classList.remove('hidden');
-    
-    try {
-        const response = await fetch(`/jurisprudencias/api/detalle/${tesis.registro_digital}`);
-        const data = await response.json();
-        const t = data.success ? data.tesis : tesis;
-        tesisSeleccionada = t;
-        
-        detalleCard.innerHTML = `
-            <div class="detalle-titulo">${escapeHtml(t.rubro) || 'Sin título'}</div>
-            <div class="detalle-meta">
-                <div><strong>📌 Registro:</strong> ${t.registro_digital || 'N/A'}</div>
-                <div><strong>📚 Tipo:</strong> ${t.tipo || 'N/A'}</div>
-                <div><strong>🏷️ Materias:</strong> ${t.materias || 'N/A'}</div>
-                <div><strong>📆 Fecha:</strong> ${formatearFecha(t.fecha_publicacion)}</div>
-            </div>
-            <div class="detalle-ia">
-                <div class="detalle-ia-title">🤖 Análisis IA</div>
-                <div class="detalle-ia-text">${escapeHtml(t.resumen_ia) || 'No disponible'}</div>
-            </div>
-            <div class="detalle-section-title">📋 Hechos</div>
-            <div class="detalle-section-text">${limpiarTexto(t.hechos)}</div>
-            <div class="detalle-section-title">⚖️ Criterio Jurídico</div>
-            <div class="detalle-section-text">${limpiarTexto(t.criterio_juridico)}</div>
-            <div class="detalle-section-title">📝 Justificación</div>
-            <div class="detalle-section-text">${limpiarTexto(t.justificacion)}</div>
-        `;
-        
-        detalleCard.classList.remove('visible');
-        setTimeout(() => detalleCard.classList.add('visible'), 20);
-        
-
-        
-    } catch (error) {
-        detalleCard.innerHTML = '<div class="loading-state">❌ Error cargando detalle</div>';
-    }
+/* Filtros */
+.filtros-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 16px 0;
 }
 
-// Cerrar detalle
-function cerrarDetalle() {
-    detalleContainer.classList.add('hidden');
-    botonesDetalle.classList.add('hidden');
-    tesisSeleccionada = null;
+.filtro-select {
+    flex: 1;
+    min-width: 100px;
+    padding: 10px 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 40px;
+    font-size: 13px;
+    background: white;
 }
 
-// Guardar PDF
-async function guardarPDF() {
-    if (!tesisSeleccionada) return;
-    
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const t = tesisSeleccionada;
-    let y = 20;
-    
-    doc.setFontSize(14);
-    const titulo = doc.splitTextToSize(t.rubro || 'Tesis sin título', 170);
-    doc.text(titulo, 20, y);
-    y += titulo.length * 5 + 6;
-    
-    doc.setFontSize(9);
-    doc.text(`Registro: ${t.registro_digital || 'N/A'} | Tipo: ${t.tipo || 'N/A'} | Materias: ${t.materias || 'N/A'} | Fecha: ${formatearFecha(t.fecha_publicacion)}`, 20, y);
-    y += 8;
-    
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'bold');
-    doc.text('Análisis IA:', 20, y);
-    y += 5;
-    doc.setFont(undefined, 'normal');
-    const resumen = doc.splitTextToSize(t.resumen_ia || 'No disponible', 170);
-    doc.text(resumen, 20, y);
-    y += resumen.length * 5 + 8;
-    
-    if (y > 270) { doc.addPage(); y = 20; }
-    
-    doc.setFont(undefined, 'bold');
-    doc.text('Hechos:', 20, y);
-    y += 5;
-    doc.setFont(undefined, 'normal');
-    const hechos = doc.splitTextToSize(t.hechos || 'No disponible', 170);
-    doc.text(hechos, 20, y);
-    y += hechos.length * 5 + 8;
-    
-    if (y > 270) { doc.addPage(); y = 20; }
-    
-    doc.setFont(undefined, 'bold');
-    doc.text('Criterio Jurídico:', 20, y);
-    y += 5;
-    doc.setFont(undefined, 'normal');
-    const criterio = doc.splitTextToSize(t.criterio_juridico || 'No disponible', 170);
-    doc.text(criterio, 20, y);
-    y += criterio.length * 5 + 8;
-    
-    if (y > 270) { doc.addPage(); y = 20; }
-    
-    doc.setFont(undefined, 'bold');
-    doc.text('Justificación:', 20, y);
-    y += 5;
-    doc.setFont(undefined, 'normal');
-    const justi = doc.splitTextToSize(t.justificacion || 'No disponible', 170);
-    doc.text(justi, 20, y);
-    
-    doc.save(`tesis_${t.registro_digital || t.id}.pdf`);
+.filtro-input {
+    flex: 2;
+    min-width: 140px;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 40px;
+    font-size: 13px;
+    background: white;
 }
 
-// Eventos
-filtroTipo.addEventListener('change', filtrarTesis);
-filtroMateria.addEventListener('change', filtrarTesis);
-filtroBusqueda.addEventListener('input', filtrarTesis);
-btnCerrarDetalle.addEventListener('click', cerrarDetalle);
-btnGuardarPDF.addEventListener('click', guardarPDF);
+.filtro-select:focus, .filtro-input:focus {
+    outline: none;
+    border-color: #fbbf24;
+    box-shadow: 0 0 0 2px rgba(251,191,36,0.2);
+}
 
-// Iniciar
-cargarTesis();
+/* Contador */
+.contador-destacado {
+    background: #0f172a;
+    border-left: 4px solid #fbbf24;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    color: #e2e8f0;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.contador-destacado span { color: #fbbf24; }
+
+/* Visualizador - 6 tesis visibles */
+.visualizador-wrapper {
+    max-height: calc(4 * 105px);
+    overflow-y: auto;
+    border-radius: 16px;
+    scrollbar-width: thin;
+    scrollbar-color: #fbbf24 #e2e8f0;
+}
+
+.visualizador-wrapper::-webkit-scrollbar { width: 5px; }
+.visualizador-wrapper::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
+.visualizador-wrapper::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }
+
+.visualizador-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Tarjetas */
+.tesis-card {
+    background: white;
+    border-radius: 14px;
+    padding: 12px 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    border: 1px solid #eef2f6;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.tesis-card:active { transform: scale(0.99); }
+
+.meta-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: #5b6778;
+    margin-bottom: 8px;
+}
+
+/* Badges */
+.badge-jurisprudencia {
+    background: #d4edda;
+    color: #155724;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.badge-aislada {
+    background: #fff3cd;
+    color: #856404;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+/* Colores por materia */
+.materia-Penal { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 500; display: inline-block; }
+.materia-Civil { background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 500; display: inline-block; }
+.materia-Laboral { background: #fef9c3; color: #854d0e; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 500; display: inline-block; }
+.materia-Administrativa { background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 500; display: inline-block; }
+.materia-Constitucional { background: #f3e8ff; color: #6b21a5; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 500; display: inline-block; }
+.materia-Com├║n { background: #cffafe; color: #0e7490; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 500; display: inline-block; }
+.materia-default { background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 500; display: inline-block; }
+
+.rubro-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1e293b;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Botones detalle */
+.botones-detalle {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 20px;
+    margin-bottom: 16px;
+}
+
+.btn-cerrar, .btn-guardar {
+    padding: 10px 20px;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-cerrar { background: #e2e8f0; color: #334155; }
+.btn-cerrar:hover { background: #cbd5e1; }
+
+.btn-guardar { background: #fbbf24; color: #0f172a; }
+.btn-guardar:hover { background: #f59e0b; }
+
+/* Detalle */
+.detalle-container { margin-top: 16px; }
+
+.detalle-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border-top: 4px solid #fbbf24;
+    transition: all 0.25s ease-out;
+    opacity: 0;
+    transform: translateY(15px);
+}
+
+.detalle-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.detalle-titulo {
+    font-size: 1.125rem;
+    font-weight: bold;
+    color: #1e293b;
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.detalle-meta {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    font-size: 12px;
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 12px;
+    margin-bottom: 16px;
+}
+
+.detalle-meta strong { color: #2563eb; }
+
+.detalle-ia {
+    background: #eff6ff;
+    padding: 12px;
+    border-radius: 12px;
+    border-left: 4px solid #fbbf24;
+    margin-bottom: 16px;
+}
+
+.detalle-ia-title {
+    font-weight: bold;
+    color: #1e40af;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.detalle-ia-text { color: #334155; font-size: 13px; line-height: 1.5; }
+
+.detalle-section-title {
+    font-weight: bold;
+    color: #1e293b;
+    font-size: 13px;
+    margin-top: 16px;
+    margin-bottom: 6px;
+}
+
+.detalle-section-text {
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* Tooltip */
+.tooltip-ai {
+    position: fixed;
+    z-index: 9999;
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-size: 12px;
+    line-height: 1.4;
+    max-width: 280px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    border-left: 3px solid #fbbf24;
+}
+
+.tooltip-ai.visible { opacity: 1; }
+
+/* Footer */
+.footer {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 10px;
+    padding: 20px;
+}
+
+.loading-state {
+    text-align: center;
+    padding: 40px;
+    color: #94a3b8;
+}
+
+.hidden { display: none; }
