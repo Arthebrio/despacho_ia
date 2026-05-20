@@ -107,7 +107,7 @@ body {
 
 .contador-destacado span { color: #fbbf24; }
 
-/* Visualizador - 6 tesis visibles */
+/* Visualizador */
 .visualizador-wrapper {
     max-height: calc(4 * 105px);
     overflow-y: auto;
@@ -176,7 +176,7 @@ body {
 .materia-Laboral { background: #fef9c3; color: #854d0e; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 500; display: inline-block; }
 .materia-Administrativa { background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 500; display: inline-block; }
 .materia-Constitucional { background: #f3e8ff; color: #6b21a5; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 500; display: inline-block; }
-.materia-Común { background: #cffafe; color: #0e7490; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 500; display: inline-block; }
+.materia-Comun { background: #cffafe; color: #0e7490; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 500; display: inline-block; }
 .materia-default { background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 500; display: inline-block; }
 
 .rubro-text {

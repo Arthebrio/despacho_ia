@@ -1,20 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Prueba</title>
+    <meta charset="UTF-8">
+    <title>Prueba Jurisprudencias</title>
 </head>
 <body>
-    <input type="text" id="termino" placeholder="Concepto">
-    <button onclick="buscar()">Buscar</button>
-    <div id="resultado"></div>
+    <h1>Prueba de Jurisprudencias</h1>
+    <div id="test">Cargando...</div>
 
     <script>
-        async function buscar() {
-            const termino = document.getElementById('termino').value;
-            const res = await fetch(`/analizador/api/buscar?termino=${termino}`);
-            const data = await res.json();
-            document.getElementById('resultado').innerHTML = JSON.stringify(data);
-        }
+        fetch('/api/jurisprudencias')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('test').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            })
+            .catch(err => {
+                document.getElementById('test').innerHTML = 'Error: ' + err.message;
+            });
     </script>
 </body>
 </html>
