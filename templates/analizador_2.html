@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="description" content="Explorador semántico de leyes mexicanas - Visualización 3D de conceptos legales">
+    <title>LEXIA_mx | Explorador Semántico de Leyes</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0a2a 0%, #04040f 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .header {
+            background: rgba(10, 10, 42, 0.95);
+            border-bottom: 1px solid #2a2a4a;
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        
+        .container-mobile {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+        
+        .btn-back {
+            color: #ffcc66;
+            font-size: 24px;
+            text-decoration: none;
+            transition: transform 0.2s;
+        }
+        
+        .btn-back:hover {
+            transform: translateX(-3px);
+            color: #d4890a;
+        }
+        
+        .title {
+            font-size: 1.8rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+        
+        .title-white {
+            color: #ffffff;
+        }
+        
+        .title-gold {
+            color: #ffcc66;
+            font-weight: 600;
+        }
+        
+        .spacer {
+            width: 30px;
+        }
+        
+        .subtitle {
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-top: 8px;
+            text-align: center;
+        }
+        
+        /* Visualización 3D */
+        .viz3d-section {
+            background: rgba(0,0,0,0.3);
+            border-radius: 16px;
+            margin: 20px 0;
+            overflow: hidden;
+            border: 1px solid #2a2a4a;
+        }
+        
+        .viz3d-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background: rgba(26, 26, 58, 0.8);
+            border-bottom: 1px solid #2a2a4a;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .viz3d-header h3 {
+            color: #ffcc66;
+            font-size: 1rem;
+            margin: 0;
+        }
+        
+        .viz3d-info {
+            font-size: 0.75rem;
+            color: #888;
+        }
+        
+        #canvas3d {
+            width: 100%;
+            height: 500px;
+            display: block;
+            background: #04040f;
+            cursor: grab;
+        }
+        
+        #canvas3d:active {
+            cursor: grabbing;
+        }
+        
+        /* Buscador */
+        .buscador-section {
+            margin: 20px 0;
+        }
+        
+        .buscador-row {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .buscador-input {
+            flex: 1;
+            padding: 14px 18px;
+            border: 1px solid #2a2a4a;
+            border-radius: 12px;
+            background: #1a1a3a;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .buscador-input:focus {
+            outline: none;
+            border-color: #ffcc66;
+            box-shadow: 0 0 10px rgba(255,204,102,0.3);
+        }
+        
+        .buscador-input::placeholder {
+            color: #666;
+        }
+        
+        .buscador-btn {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #d4890a, #ffcc66);
+            border: none;
+            border-radius: 12px;
+            color: #1a1a3a;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .buscador-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(212, 137, 10, 0.4);
+        }
+        
+        .buscador-ayuda {
+            font-size: 0.75rem;
+            color: #777;
+            margin-top: 10px;
+        }
+        
+        .buscador-ayuda i {
+            color: #ffcc66;
+            margin-right: 5px;
+        }
+        
+        /* Botón artículos */
+        .btn-articulos {
+            width: 100%;
+            padding: 14px;
+            background: rgba(26, 26, 58, 0.8);
+            border: 1px solid #ffcc66;
+            border-radius: 12px;
+            color: #ffcc66;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 15px 0;
+        }
+        
+        .btn-articulos:hover {
+            background: #ffcc66;
+            color: #1a1a3a;
+        }
+        
+        /* Visualizador de artículos */
+        .visualizador-articulos {
+            background: #f5f5f0;
+            border-radius: 16px;
+            margin: 20px 0;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .visualizador-articulos h3 {
+            background: linear-gradient(135deg, #1a1a3a, #0a0a2a);
+            padding: 15px 20px;
+            margin: 0;
+            color: #ffcc66;
+            font-size: 1.1rem;
+        }
+        
+        #articulosContainer {
+            padding: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        /* Scroll personalizado */
+        #articulosContainer::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        #articulosContainer::-webkit-scrollbar-track {
+            background: #e0e0e0;
+            border-radius: 4px;
+        }
+        
+        #articulosContainer::-webkit-scrollbar-thumb {
+            background: #d4890a;
+            border-radius: 4px;
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid #2a2a4a;
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 1.3rem;
+            }
+            
+            .buscador-row {
+                flex-direction: column;
+            }
+            
+            .viz3d-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            #canvas3d {
+                height: 400px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container-mobile {
+                padding: 0 15px;
+            }
+            
+            .viz3d-info {
+                font-size: 0.65rem;
+            }
+        }
+/* 🌟 Añade esto justo al final del <style> en el HTML */
+        mark, .highlight {
+            background: rgba(255, 204, 102, 0.12) !important; /* Dorado ultra suave */
+            color: #ffcc66 !important;                        /* Texto dorado corporativo */
+            font-weight: normal !important;                   /* Letra estilizada, no gruesa */
+            padding: 1px 4px;
+            border-radius: 4px;
+        }
+
+    </style>
+    
+    <!-- Datos globales -->
+    <script src="/static/js/data/grafos_data.js"></script>
+    <script>
+        // Verificar que GRAFOS_DATA se cargó correctamente
+        if (typeof GRAFOS_DATA !== 'undefined') {
+            window.GRAFOS_DATA = GRAFOS_DATA;
+            console.log('✅ GRAFOS_DATA cargado:', window.GRAFOS_DATA.length, 'nodos');
+        } else {
+            console.error('❌ GRAFOS_DATA no encontrado');
+        }
+    </script>
+</head>
+<body>
+
+<div class="header">
+    <div class="container-mobile">
+        <div class="header-row">
+            <a href="/" class="btn-back"><i class="fas fa-arrow-left"></i></a>
+            <h1 class="title"><span class="title-white">LEX IA</span><span class="title-gold">_MX</span></h1>
+            <div class="spacer"></div>
+        </div>
+        <p class="subtitle">Explorador Semántico · Relaciones entre Conceptos Legales · Ley de Amparo</p>
+    </div>
+</div>
+
+<main class="container-mobile">
+    
+    <!-- Visualización 3D -->
+    <div id="visualizacion3d" class="viz3d-section">
+        <div class="viz3d-header">
+            <h3><i class="fas fa-globe"></i> MAPA CONCEPTUAL 3D</h3>
+            <span class="viz3d-info">🖱️ Arrastra para rotar | Scroll para zoom | Click en burbuja para navegar</span>
+        </div>
+        <canvas id="canvas3d"></canvas>
+    </div>
+
+    <!-- Buscador -->
+    <div class="buscador-section">
+        <div class="buscador-row">
+            <input type="text" id="inputConcepto" class="buscador-input" 
+                   placeholder="Escribe un concepto legal (ej: demanda, amparo, suspensión)...">
+            <button id="btnBuscar" class="buscador-btn">Explorar</button>
+        </div>
+        <p class="buscador-ayuda">
+            <i class="fas fa-info-circle"></i> Explora relaciones semánticas entre conceptos. 
+            Haz clic en cualquier burbuja del mapa para navegar.
+        </p>
+    </div>
+
+    <!-- Botón para mostrar artículos -->
+    <button id="btnMostrarArticulos" class="btn-articulos">
+        <i class="fas fa-file-alt"></i> Mostrar artículos relacionados
+    </button>
+
+    <!-- Visualizador de artículos (panel desplegable) -->
+    <div id="visualizadorArticulos" class="visualizador-articulos">
+        <h3><i class="fas fa-file-alt"></i> Artículos relacionados</h3>
+        <div id="articulosContainer"></div>
+    </div>
+    
+</main>
+
+<footer>
+    <p>© 2026 LEXIA_MX · Explorador Semántico · Ley de Amparo</p>
+</footer>
+
+<!-- Módulo principal -->
+<script type="module" src="/static/js/main.js"></script>
+
+</body>
+</html>

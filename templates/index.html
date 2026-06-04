@@ -3,110 +3,371 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LEXIA MX | Litigio e Innovación Tecnológica</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>LEXIA MX | Inteligencia Jurídica</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        /* ============================================
+           LEXIA MX - ESTILOS OPTIMIZADOS
+           Sin dependencias externas (Tailwind eliminado)
+           Colores: Azul #1e3a8a / Dorado #fbbf24
+        ============================================ */
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #f8fafc;
+        }
+        
+        /* Navegación */
+        .navbar {
+            background: #1e3a8a;
+            color: white;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            font-style: italic;
+            letter-spacing: -0.5px;
+        }
+        
+        .logo span {
+            color: #fbbf24;
+        }
+        
+        .nav-subtitle {
+            font-size: 0.875rem;
+            font-style: italic;
+            color: #9ca3af;
+            letter-spacing: 1px;
+            text-align: right;
+        }
+        
+        /* Header Hero */
+        .hero {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 4rem 1rem;
+            text-align: center;
+        }
+        
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+          
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.125rem;
+            color: #6b7280;
+            max-width: 768px;
+            font-style: italic;
+            margin: 0 auto;
+        }
+        
+        /* Grid de tarjetas */
+        .cards-section {
+            padding: 3rem 1rem;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+        
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        
+        @media (min-width: 768px) {
+            .cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .cards-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        
+        /* Tarjeta */
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            border: 1px solid #f1f5f9;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .card:hover {
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+            transform: translateY(-4px);
+        }
+        
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .card-icon-1 { color: #4f46e5; }
+        .card-icon-2 { color: #16a34a; }
+        .card-icon-3 { color: #e11d48; }
+        .card-icon-4 { color: #f59e0b; }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+        
+        .card-text {
+            font-size: 0.925rem;
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: #1e3a8a;
+            color: white;
+            text-decoration: none;
+            padding: 0.6rem 2.3rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            text-align: center;
+            transition: background 0.2s;
+            border: none;
+            cursor: pointer;
+            width: 90%;
+        }
+        
+        .btn:hover {
+            background: #1e40af;
+        }
+        
+        /* Footer */
+        .footer {
+            background: #1e3a8a;
+            color: #9ca3af;
+            padding: 1.5rem;
+            border-top: 1px solid #1e293b;
+        }
+        
+        .footer-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            text-align: center;
+        }
+        
+        @media (min-width: 768px) {
+            .footer-container {
+                grid-template-columns: repeat(3, 1fr);
+                text-align: left;
+            }
+            .footer-social {
+                text-align: center;
+            }
+            .footer-right {
+                text-align: right;
+            }
+        }
+        
+        .footer-title {
+            color: white;
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+        
+        .footer-sub {
+            font-size: 0.6875rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .footer-social a {
+            color: #9ca3af;
+            margin: 0 0.75rem;
+            font-size: 1.125rem;
+            transition: color 0.2s;
+            text-decoration: none;
+        }
+        
+        .footer-social a:hover {
+            color: #60a5fa;
+        }
+        
+        .footer-right-text {
+            font-size: 0.625rem;
+        }
+        
+        /* Botón WhatsApp flotante */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #25D366;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            z-index: 1000;
+            text-decoration: none;
+        }
+        
+        .whatsapp-float:hover {
+            background: #128C7E;
+            transform: scale(1.1);
+        }
+        
+        /* Utilidades */
+        .text-center { text-align: center; }
+        .hidden { display: none; }
+    </style>
 </head>
-<body class="bg-gray-50 font-sans">
+<body>
 
-    <nav class="bg-blue-900 text-white p-6 shadow-lg">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-bold tracking-tight">LEXIA <span class="text-amber-400">MX</span></h1>
-            <p class="text-sm italic text-gray-400 tracking-widest text-right">Litigio e Innovación Tecnológica</p>
+    <!-- ============================================
+         NAVEGACIÓN
+    ============================================ -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="logo">Lex_ia <span>mx</span></h1>
+            <p class="nav-subtitle">Litigio e Innovación Tecnológica</p>
         </div>
     </nav>
 
-    <header class="py-16 bg-white border-b">
-        <div class="container mx-auto text-center px-4">
-            <h2 class="text-3xl font-extrabold text-slate-800 mb-4">HERRAMIENTAS JURÍDICAS CON INTELIGENCIA ARTIFICIAL</h2>
-            <p class="text-lg text-gray-500 max-w-3xl mx-auto">Desarrolladas por Abogados e Ingenieros de Software - LEGAL TECH</p>
-        </div>
+    <!-- ============================================
+         HEADER HERO
+    ============================================ -->
+    <header class="hero">
+        <h2 class="hero-title">HERRAMIENTAS DE INTELIGENCIA JURÍDICA</h2>
+        <p class="hero-subtitle">Especialistas en Legal Tech: Tecnología para el Litigio.</p>
     </header>
 
-    <section class="py-12 container mx-auto px-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 card-hover flex flex-col justify-between">
+    <!-- ============================================
+         TARJETAS
+    ============================================ -->
+    <section class="cards-section">
+        <div class="cards-grid">
+            
+            <!-- Tarjeta 1: Jurisprudencias SCJN -->
+            <div class="card">
                 <div>
-                    <div class="text-indigo-600 mb-4 text-3xl"><i class="fas fa-magnifying-glass"></i></div>
-                    <h3 class="font-bold text-xl mb-2 text-slate-800">Consulta a Jurisprudencias Actuales</h3>
-                    <p class="text-gray-500 text-sm mb-6">Más de mil Tesis de la XII Época Organizadas con IA.</p>
+                    <div class="card-icon card-icon-1"><i class="fas fa-magnifying-glass"></i></div>
+                    <h3 class="card-title">Jurisprudencias SCJN</h3>
+                    <p class="card-text">Búsqueda rápida con resumen de IA</p>
                 </div>
-                <a href="/jurisprudencias" class="btn-profesional">Acceder</a>
+                <a href="/jurisprudencias" class="btn">Acceder</a>
             </div>
 
-            <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 card-hover flex flex-col justify-between">
+            <!-- Tarjeta 2: Prompts Jurídicos IA -->
+            <div class="card">
                 <div>
-                    <div class="text-green-600 mb-4 text-3xl"><i class="fas fa-terminal"></i></div>
-                    <h3 class="font-bold text-xl mb-2 text-slate-800">Generador de Prompts</h3>
-                    <p class="text-gray-500 text-sm mb-6">Prompts Jurídicos elaborados con IA.</p>
+                    <div class="card-icon card-icon-2"><i class="fas fa-terminal"></i></div>
+                    <h3 class="card-title">Prompts Jurídicos IA</h3>
+                    <p class="card-text">Genera instrucciones para IA a partir de lenguaje natural</p>
                 </div>
-                <a href="/prompts" class="btn-profesional">Iniciar</a>
+                <a href="/prompts" class="btn">Iniciar</a>
             </div>
 
-            <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 card-hover flex flex-col justify-between">
+            <!-- Tarjeta 3: Mapa Conceptual 3D - VERSIÓN PRUEBA -->
+            <div class="card">
                 <div>
-                    <div class="text-rose-600 mb-4 text-3xl"><i class="fas fa-file-signature"></i></div>
-                    <h3 class="font-bold text-xl mb-2 text-slate-800">Analizador Inteligente de Leyes</h3>
-                    <p class="text-gray-500 text-sm mb-6">Análisis Atómico de Leyes Procesales en México.</p>
+                    <div class="card-icon card-icon-3"><i class="fas fa-file-signature"></i></div>
+                    <h3 class="card-title">Explorador Interacctivo de Leyes</h3>
+                    <p class="card-text">Navegacion en Mapa 3D de la Ley de Amparo</p>
                 </div>
-                <a href="/analizador" class="btn-profesional">Analizar</a>
+                 <a href="/analizador_2" class="btn">Explorar</a>
             </div>
 
-            <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 card-hover flex flex-col justify-between">
+            <!-- Tarjeta 4: Consultor IA Legal -->
+            <div class="card">
                 <div>
-                    <div class="text-amber-500 mb-4 text-3xl"><i class="fas fa-scale-balanced"></i></div>
-                    <h3 class="font-bold text-xl mb-2 text-slate-800">Abogado Virtual</h3>
-                    <p class="text-gray-500 text-sm mb-6">Agente IA para Consultas Legales especializadas.</p>
+                    <div class="card-icon card-icon-4"><i class="fas fa-scale-balanced"></i></div>
+                    <h3 class="card-title">Consultor IA Legal</h3>
+                    <p class="card-text">Realiza preguntas legales y recibe respuestas de un Agente de Inteligencia Artificial en desarrollo</p>
                 </div>
-                <a href="/experimental" class="btn-profesional">Colaborar</a>
+                <a href="/experimental" class="btn">Consultar</a>
             </div>
+
         </div>
     </section>
 
-    <footer class="bg-blue-900 text-gray-400 py-6 border-t border-slate-800">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center text-center md:text-left">
-                <div>
-                    <h4 class="text-white font-bold text-md">LEXIAMX_PRO</h4>
-                    <p class="text-[11px] uppercase tracking-wider">Litigio con Inteligencia Artificial</p>
-                </div>
-                <div class="text-center">
-                    <div class="flex justify-center space-x-6 text-lg">
-                        <a href="#" class="hover:text-blue-400"><i class="fab fa-linkedin"></i></a>
-                        <a href="#" class="hover:text-blue-400"><i class="fab fa-github"></i></a>
-                        <a href="#" class="hover:text-blue-400"><i class="fas fa-envelope"></i></a>
-                    </div>
-                </div>
-                <div class="md:text-right">
-                    <p class="text-[10px]">© 2026 Todos los derechos reservados.</p>
-                </div>
+    <!-- ============================================
+         FOOTER
+    ============================================ -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div>
+                <h4 class="footer-title">LEXIA MX</h4>
+                <p class="footer-sub">Litigio con Inteligencia Artificial</p>
+            </div>
+            <div class="footer-social">
+                <a href="#"><i class="fab fa-linkedin"></i></a>
+                <a href="#"><i class="fab fa-github"></i></a>
+                <a href="#"><i class="fas fa-envelope"></i></a>
+            </div>
+            <div class="footer-right">
+                <p class="footer-right-text">© 2026 Todos los derechos reservados.</p>
             </div>
         </div>
     </footer>
 
-    <a href="https://wa.me/521234567890?text=Me%20interesa%20LexIA%20MX" class="whatsapp-float" target="_blank">
+    <!-- ============================================
+         BOTÓN WHATSAPP FLOTANTE
+    ============================================ -->
+    <a href="https://wa.me/521234567890?text=Me%20interesa%20LexIA%20MX" class="whatsapp-float" target="_blank" rel="noopener noreferrer">
         <i class="fab fa-whatsapp"></i>
     </a>
 
-    <script src="/static/js/script.js"></script>
-
-  <script>
-    // Contador invisible - solo visible en consola del navegador (F12)
-    (async function() {
-        try {
-            const respuesta = await fetch('https://api.counterapi.dev/v1/lexia-mx/visitas/up');
-            const datos = await respuesta.json();
-            console.log('📊 LEXIA MX - Estadísticas:');
-            console.log('   🖥️ Visitas totales:', datos.count);
-            console.log('   🌐 URL:', window.location.href);
-            console.log('   📱 Dispositivo:', /Mobile/i.test(navigator.userAgent) ? 'Móvil' : 'Escritorio');
-            console.log('   🕒 Fecha:', new Date().toLocaleString());
-        } catch(e) {
-            console.log('⚠️ Error al cargar contador:', e);
-        }
-    })();
-</script>  
+    <!-- Contador invisible (solo consola F12) -->
+    <script>
+        (async function() {
+            try {
+                const respuesta = await fetch('https://api.counterapi.dev/v1/lexia-mx/visitas/up');
+                const datos = await respuesta.json();
+                console.log('📊 LEXIA MX - Estadísticas:');
+                console.log('   🖥️ Visitas totales:', datos.count);
+                console.log('   🌐 URL:', window.location.href);
+                console.log('   📱 Dispositivo:', /Mobile/i.test(navigator.userAgent) ? 'Móvil' : 'Escritorio');
+                console.log('   🕒 Fecha:', new Date().toLocaleString());
+            } catch(e) {
+                console.log('⚠️ Error al cargar contador:', e);
+            }
+        })();
+    </script>
 
 </body>
 </html>

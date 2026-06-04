@@ -1,27 +1,30 @@
-
-
 # repositories/jurisprudencia_repository.py
-
 
 from services.supabase_service import supabase_service
 
 class JurisprudenciaRepository:
-    """Repositorio para la tabla jurisprudencias_xii_final"""
+    """Repositorio optimizado para la tabla jurisprudencias_xii_final"""
     
     def __init__(self):
         self.supabase = supabase_service.get_client()
         self.table_name = "jurisprudencias_xii_final"
     
     def obtener_todas(self):
-        """Obtiene todas las tesis (con paginación para evitar límite de 1000)"""
+        """
+        Obtiene todas las tesis de forma ligera para el listado inicial.
+        Ordena desde Supabase por Registro Digital de mayor a menor (desc=True)
+        para previsualizar siempre lo más reciente primero.
+        """
         try:
             todos = []
             offset = 0
             batch_size = 500
             
             while True:
+                # 🌟 Corregido: Usamos desc=True que es el estándar de supabase-py en Python
                 response = self.supabase.table(self.table_name) \
-                    .select("id, registro_digital, tipo, materias, fecha_publicacion, rubro, resumen_ia") \
+                    .select("id, registro_digital, tipo, materias, fecha_publicacion, fecha_normalizada, rubro, resumen_ia") \
+                    .order("registro_digital", desc=True) \
                     .range(offset, offset + batch_size - 1) \
                     .execute()
                 
@@ -37,11 +40,11 @@ class JurisprudenciaRepository:
             
             return todos
         except Exception as e:
-            print(f"❌ Error obteniendo tesis: {e}")
+            print(f"❌ Error obteniendo tesis en repositorio: {e}")
             raise e
     
     def obtener_por_registro(self, registro):
-        """Obtiene una tesis por su número de registro"""
+        """Obtiene el detalle pesado de una tesis por su número de registro digital (On Demand)"""
         try:
             response = self.supabase.table(self.table_name) \
                 .select("*") \
@@ -52,11 +55,11 @@ class JurisprudenciaRepository:
                 return response.data[0]
             return None
         except Exception as e:
-            print(f"❌ Error obteniendo tesis {registro}: {e}")
+            print(f"❌ Error obtuvo detalle de tesis {registro}: {e}")
             raise e
     
     def obtener_por_id(self, id_tesis):
-        """Obtiene una tesis por su ID interno"""
+        """Obtiene una tesis completa por su ID interno de base de datos"""
         try:
             response = self.supabase.table(self.table_name) \
                 .select("*") \
@@ -71,5 +74,5 @@ class JurisprudenciaRepository:
             raise e
 
 
-# ✅ Instancia global (importante para que funcione la importación)
+# ✅ Instancia global para el uso unificado en la capa de servicios
 jurisprudencia_repository = JurisprudenciaRepository()

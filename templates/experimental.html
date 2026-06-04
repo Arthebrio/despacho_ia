@@ -3,53 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>LEXIA_MX | Espacio Experimental - Abogado Virtual</title>
+    <title>LEXIA_MX | Abogado IA - Consultor Legal</title>
     
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
     <link rel="stylesheet" href="/static/css/experimental.css">
 </head>
 <body>
 
+    <!-- HEADER -->
     <div class="header">
-        <div class="container-mobile">
+        <div class="container">
             <div class="header-row">
-                <a href="/" class="btn-back"><i class="fas fa-arrow-left"></i></a>
-                <h1 class="title"><span class="title-white">LEXIA</span><span class="title-gold">_MX</span></h1>
+                <a href="/" class="btn-back">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <h1 class="title">
+                    <span class="title-white">Lex_ia </span><span class="title-gold">mx</span>
+                </h1>
                 <div class="spacer"></div>
             </div>
-            <p class="subtitle">🧪 Espacio Experimental · Abogado Virtual en Entrenamiento</p>
+            <p class="subtitle">
+                <i class="fas fa-brain"></i> Abogado programado con inteligencia artificial
+            </p>
         </div>
     </div>
 
-    <main class="container-mobile">
+    <main class="container">
         
-        <div class="alert-info">
-            <i class="fas fa-flask mr-2"></i>
-            Versión beta 
-        </div>
-
         <!-- FORMULARIO -->
-        <div class="form-card">
-            <h2 class="form-title">👤 Tus datos</h2>
+        <div id="formularioContainer" class="form-card">
+            <h2 class="form-title">
+                <i class="fas fa-user-circle"></i> Tus datos
+            </h2>
             
-            <div class="form-group">
-                <label>Nombre Completo *</label>
-                <input type="text" id="nombre" placeholder="Ej. Braulio Flores">
+            <!-- Mensaje de límite -->
+            <div id="limiteMensaje" class="alert-limit hidden">
+                <i class="fas fa-clock"></i>
+                <div>
+                    <p class="font-medium" id="limiteTitulo">Nuestro abogado está trabajando</p>
+                    <p class="text-sm" id="limiteTexto">Espera unos minutos antes de realizar otra consulta</p>
+                </div>
+            </div>
+            
+            <!-- Campos del formulario -->
+            <div class="form-group" id="grupoNombre">
+                <label>Nombre Completo <span class="required">*</span></label>
+                <input type="text" id="nombre" placeholder="Ej. Braulio Flores García" autocomplete="name">
+                <div class="field-error" id="errorNombre"></div>
             </div>
             
             <div class="form-row">
-                <div class="form-group">
-                    <label>Ocupación *</label>
-                    <select id="ocupacion">
-                        <option value="Litigante">Litigante</option>
-                        <option value="Estudiante">Estudiante</option>
-                        <option value="Otro">Otro / Particular</option>
+                <div class="form-group" id="grupoPerfil">
+                    <label>Perfil <span class="required">*</span></label>
+                    <select id="perfil">
+                        <option value="particular">👤 Particular / Cliente</option>
+                        <option value="abogado">⚖️ Abogado litigante</option>
+                        <option value="estudiante">📚 Estudiante de derecho</option>
                     </select>
+                    <div class="field-error" id="errorPerfil"></div>
                 </div>
-                <div class="form-group">
-                    <label>Estado *</label>
+                <div class="form-group" id="grupoEstado">
+                    <label>Estado <span class="required">*</span></label>
                     <select id="estado">
                         <option value="Aguascalientes">Aguascalientes</option>
                         <option value="Baja California">Baja California</option>
@@ -57,7 +77,7 @@
                         <option value="Campeche">Campeche</option>
                         <option value="Chiapas">Chiapas</option>
                         <option value="Chihuahua">Chihuahua</option>
-                        <option value="Ciudad de México">Ciudad de México</option>
+                        <option value="Ciudad de México" selected>Ciudad de México</option>
                         <option value="Coahuila">Coahuila</option>
                         <option value="Colima">Colima</option>
                         <option value="Durango">Durango</option>
@@ -73,7 +93,7 @@
                         <option value="Oaxaca">Oaxaca</option>
                         <option value="Puebla">Puebla</option>
                         <option value="Querétaro">Querétaro</option>
-                        <option value="Quintana Roo" selected>Quintana Roo</option>
+                        <option value="Quintana Roo">Quintana Roo</option>
                         <option value="San Luis Potosí">San Luis Potosí</option>
                         <option value="Sinaloa">Sinaloa</option>
                         <option value="Sonora">Sonora</option>
@@ -84,75 +104,117 @@
                         <option value="Yucatán">Yucatán</option>
                         <option value="Zacatecas">Zacatecas</option>
                     </select>
+                    <div class="field-error" id="errorEstado"></div>
                 </div>
             </div>
             
             <div class="form-row">
-                <div class="form-group">
-                    <label>WhatsApp / Celular *</label>
-                    <input type="tel" id="telefono" maxlength="10" placeholder="10 dígitos">
+                <div class="form-group" id="grupoTelefono">
+                    <label>WhatsApp / Celular <span class="required">*</span></label>
+                    <input type="tel" id="telefono" maxlength="10" placeholder="10 dígitos" autocomplete="tel">
+                    <small class="field-hint">📱 Ejemplo: 5512345678</small>
+                    <div class="field-error" id="errorTelefono"></div>
                 </div>
                 <div class="form-group">
-                    <label>Correo Electrónico (Opcional)</label>
-                    <input type="email" id="correo" placeholder="ejemplo@correo.com">
+                    <label>Correo Electrónico</label>
+                    <input type="email" id="correo" placeholder="ejemplo@correo.com" autocomplete="email">
+                    <div class="field-error" id="errorCorreo"></div>
                 </div>
             </div>
             
-            <div class="form-group">
-                <label>Descripción del Caso Jurídico *</label>
-                <textarea id="consulta" rows="4" placeholder="Describe tu situación legal con detalle (mínimo 20 caracteres)..."></textarea>
-                <span id="charCount" class="char-count">0 caracteres</span>
+            <!-- Área de consulta -->
+            <div class="consulta-area" id="grupoConsulta">
+                <label>
+                    <i class="fas fa-gavel"></i> Describe tu situación legal <span class="required">*</span>
+                </label>
+                <textarea id="consulta" rows="5" 
+                    placeholder="Ejemplo: 'Tuve un accidente laboral en mi trabajo ayer. Me resbalé en el área de producción y me fracture la muñeca. Mi jefe dice que fue mi culpa y no quiere pagar el seguro. ¿Qué derechos tengo?'"></textarea>
+                
+                <!-- Barra de progreso -->
+                <div class="progress-container hidden" id="progressContainer">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                
+                <div class="char-counter">
+                    <span id="charCount">0 caracteres (mínimo 20)</span>
+                    <span><kbd>Ctrl+Enter</kbd> para enviar</span>
+                </div>
+                <div class="field-error" id="errorConsulta"></div>
             </div>
             
             <button id="btnEnviar" class="btn-enviar">
-                <i class="fas fa-gavel mr-2"></i> Enviar consulta
+                <i class="fas fa-gavel"></i> Enviar consulta legal
             </button>
         </div>
 
-        <!-- SPINNER -->
-        <div id="spinner" class="spinner-container hidden">
-            <div class="spinner"></div>
-            <p class="spinner-text">Analizando tu caso...</p>
+        <!-- SPINNER MEJORADO -->
+        <div id="spinnerContainer" class="spinner-container hidden">
+            <div class="spinner-wrapper">
+                <div class="spinner"></div>
+                
+                <!-- Barra de progreso destacada -->
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="progressBarFill"></div>
+                </div>
+                <div class="progress-percent" id="progressPercent">0%</div>
+            </div>
+            
+            <div class="spinner-content">
+                <p class="spinner-step" id="spinnerStep">
+                    <i class="fas fa-search"></i> Analizando tu caso...
+                </p>
+                <p class="spinner-substep" id="spinnerSubStep">
+                    Procesando información
+                </p>
+            </div>
         </div>
 
-        <!-- RESPUESTA -->
+        <!-- RESPUESTA (fondo azul claro) -->
         <div id="respuestaContainer" class="respuesta-card hidden">
-            <h3><i class="fas fa-robot mr-2"></i> Respuesta del Abogado Virtual</h3>
+            <div class="respuesta-header">
+                <h3>
+                    <i class="fas fa-robot"></i> Respuesta del Abogado IA
+                </h3>
+                <a href="/" class="btn-regresar">
+                    <i class="fas fa-home"></i> Ir al inicio
+                </a>
+            </div>
             <div id="respuestaTexto" class="respuesta-texto"></div>
         </div>
 
         <!-- FEEDBACK -->
         <div id="feedbackContainer" class="feedback-card hidden">
-            <p class="feedback-pregunta">¿Te fue útil esta respuesta?</p>
+            <p class="feedback-pregunta">¿Te fue útil esta orientación?</p>
             <div class="feedback-botones">
                 <button id="feedbackSi" class="feedback-btn feedback-si">
-                    <i class="fas fa-thumbs-up mr-1"></i> Sí, me sirvió
+                    <i class="fas fa-thumbs-up"></i> Sí, me ayudó
                 </button>
                 <button id="feedbackNo" class="feedback-btn feedback-no">
-                    <i class="fas fa-thumbs-down mr-1"></i> No, no me sirvió
+                    <i class="fas fa-thumbs-down"></i> No, me confundió
                 </button>
             </div>
             <div id="feedbackTextoContainer" class="feedback-texto-container hidden">
-                <textarea id="feedbackTexto" rows="2" placeholder="¿Qué podría mejorar? (Opcional)"></textarea>
+                <textarea id="feedbackTexto" rows="2" placeholder="¿Qué podríamos mejorar?"></textarea>
                 <button id="btnEnviarFeedback" class="btn-feedback">Enviar comentario</button>
             </div>
             <div id="feedbackGracias" class="feedback-gracias hidden">
-                <i class="fas fa-check-circle mr-1"></i> ¡Gracias por tu ayuda! Mejoraremos.
+                <i class="fas fa-check-circle"></i> ¡Gracias por tu ayuda!
             </div>
         </div>
 
         <!-- ERROR -->
         <div id="errorContainer" class="error-card hidden">
-            <i class="fas fa-exclamation-triangle mr-2"></i>
+            <i class="fas fa-exclamation-triangle"></i>
             <span id="errorTexto"></span>
         </div>
 
+        <!-- FOOTER -->
+        <div class="footer">
+            <p>© 2026 LEXIA_MX · Asistente jurídico experimental</p>
+            <p>Esta herramienta no sustituye la asesoría legal profesional</p>
+        </div>
     </main>
 
-    <footer class="footer">
-        <p>© 2026 LEXIA_MX · Espacio Experimental · Abogado Virtual en entrenamiento</p>
-    </footer>
-
-    <script src="/static/js/experimental.js"></script>
+    <script src="/static/js/experimental.js?v=7.0"></script>
 </body>
 </html>

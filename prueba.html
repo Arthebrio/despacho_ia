@@ -1,22 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Prueba Jurisprudencias</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>LEXIA_MX | Jurisprudencia SCJN</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <link rel="stylesheet" href="/static/css/jurisprudencias.css">
 </head>
 <body>
-    <h1>Prueba de Jurisprudencias</h1>
-    <div id="test">Cargando...</div>
 
-    <script>
-        fetch('/api/jurisprudencias')
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('test').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
-            })
-            .catch(err => {
-                document.getElementById('test').innerHTML = 'Error: ' + err.message;
-            });
-    </script>
+    <!-- HEADER -->
+    <div class="header">
+        <div class="container-mobile">
+            <div class="header-row">
+                <a href="/" class="btn-back"><i class="fas fa-arrow-left"></i></a>
+                <h1 class="title"><span class="title-white">LEX IA</span><span class="title-gold">_MX</span></h1>
+                <div class="spacer"></div>
+            </div>
+            <p class="subtitle">Jurisprudencia SCJN · Duodécima Época</p>
+        </div>
+    </div>
+
+    <main class="container-mobile">
+        <!-- FILTROS -->
+        <div class="filtros-row">
+            <select id="filtroTipo" class="filtro-select">
+                <option value="todas">📋 Todas</option>
+                <option value="Jurisprudencia">⚖️ Jurisprudencia</option>
+                <option value="Aislada">📄 Aislada</option>
+            </select>
+            <select id="filtroMateria" class="filtro-select">
+                <option value="todas">📚 Materia</option>
+                <option value="Penal">Penal</option>
+                <option value="Civil">Civil</option>
+                <option value="Laboral">Laboral</option>
+                <option value="Administrativa">Administrativa</option>
+                <option value="Constitucional">Constitucional</option>
+                <option value="Común">Común</option>
+            </select>
+            <input type="text" id="filtroBusqueda" placeholder="🔍 Buscar..." class="filtro-input">
+        </div>
+
+        <!-- CONTADOR DESTACADO -->
+        <div id="contadorResultados" class="contador-destacado">📊 Cargando...</div>
+
+        <!-- VISUALIZADOR (solo 12 visibles) -->
+        <div class="visualizador-wrapper">
+            <div id="listadoContainer" class="visualizador-lista">
+                <div class="loading-state">Cargando jurisprudencias...</div>
+            </div>
+        </div>
+
+
+        <!-- DETALLE -->
+        <div id="detalleContainer" class="detalle-container hidden">
+            <div id="detalleCard" class="detalle-card"></div>
+        </div>
+        
+        <!-- BOTONES DETALLE -->
+        <div id="botonesDetalle" class="botones-detalle hidden">
+            <button id="btnCerrarDetalle" class="btn-cerrar"><i class="fas fa-times mr-1"></i> Cerrar</button>
+            <button id="btnGuardarPDF" class="btn-guardar"><i class="fas fa-save mr-1"></i> Guardar</button>
+        </div>
+
+        
+    </main>
+
+    <footer class="footer">
+        <p>© 2026 LEXIA_MX · Jurisprudencia SCJN Duodécima Época</p>
+    </footer>
+
+    <script src="/static/js/jurisprudencias.js"></script>
 </body>
 </html>

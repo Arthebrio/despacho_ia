@@ -77,3 +77,10 @@ class Config:
 
 # Instancia global de configuración (para importar fácil)
 config = Config()
+
+
+# Agregar al final de core/config.py
+from supabase import create_client
+
+def get_supabase():
+    return create_client(config.SUPABASE.url, config.SUPABASE.key)

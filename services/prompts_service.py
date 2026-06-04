@@ -1,42 +1,23 @@
-
-
 # services/prompts_service.py
 
-
-from supabase import create_client
-from core.config import config
+from repositories.prompts_repository import prompts_repository
 
 class PromptsService:
-    """Servicio para gestionar prompts generados en Supabase"""
-    
-    def __init__(self):
-        self.supabase = create_client(config.SUPABASE.url, config.SUPABASE.key)
-        self.table_name = "prompts_generados"
+    """Servicio encargado de gestionar la lógica de negocio de los prompts jurídicos"""
     
     def guardar_prompt(self, consulta: str, prompt: str):
-        """Guarda la consulta y el prompt generado en Supabase"""
+        """Valida e instruye el guardado del prompt en el repositorio"""
         try:
-            data = {
-                "usuario_consulta": consulta,
-                "prompt_generado": prompt
-            }
-            response = self.supabase.table(self.table_name).insert(data).execute()
-            return response.data[0] if response.data else None
+            return prompts_repository.guardar(consulta, prompt)
         except Exception as e:
-            print(f"❌ Error guardando prompt: {e}")
-            raise e
-    
+            raise Exception(f"Error al procesar el guardado del prompt: {e}")
+            
     def actualizar_feedback(self, id_registro: int, feedback: str):
-        """Actualiza el feedback de un prompt existente"""
+        """Valida e instruye la actualización del comentario del usuario"""
         try:
-            self.supabase.table(self.table_name) \
-                .update({"feedback": feedback}) \
-                .eq("id", id_registro) \
-                .execute()
-            return True
+            return prompts_repository.actualizar_feedback(id_registro, feedback)
         except Exception as e:
-            print(f"❌ Error actualizando feedback: {e}")
-            raise e
+            raise Exception(f"Error al registrar la retroalimentación: {e}")
 
-# Instancia global
+# ✅ Instancia global para consumo en las rutas correspondientes
 prompts_service = PromptsService()

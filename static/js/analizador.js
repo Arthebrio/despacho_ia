@@ -1,26 +1,26 @@
-/* ============================================ */
-/* ANALIZADOR SEMÁNTICO - VERSIÓN FINAL         */
-/* ============================================ */
+/* ============================================
+   analizador.js - VERSIÓN FINAL CORREGIDA
+   ============================================ */
 
 import { initThreeVisualizer, actualizarVisualizador3D } from '/static/js/three-visualizer.js';
+import { encontrarConcepto, obtenerSatelitesEnriquecidos } from '/static/js/buscador.js';
+import { NODOS_ARTICULOS } from '/static/js/nodos_articulos.js';
+import { ARTICULOS_DETALLE } from '/static/js/articulos_detalle.js';
 
-const API_BASE = '/analizador/api';
+let conceptoActual = null;
+let historial = [];
+let visualizadorInicializado = false;
+let panelArticulos = null;
 
-const nombresLeyes = {
-    "CCF": "Código Civil Federal",
-    "CPCF": "Código Procesal Civil Federal",
-    "CNPCF": "Código Nacional de Procedimientos Civiles Federales",
-    "CPF": "Código Penal Federal",
-    "CNPP": "Código Nacional de Procedimientos Penales",
-    "LFT": "Ley Federal del Trabajo",
-    "LFCA": "Ley Federal de Competencia Económica",
-    "LGS": "Ley General de Salud",
-    "LGAM": "Ley General de Acceso de las Mujeres",
-    "LGDS": "Ley General de Desarrollo Social"
-};
-
-function obtenerNombreLey(abreviatura) {
-    return nombresLeyes[abreviatura] || abreviatura || "Ley no especificada";
+function addLog(msg) {
+    const container = document.getElementById('logsContainer');
+    if (container) {
+        const div = document.createElement('div');
+        div.className = 'log-line';
+        div.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        container.insertBefore(div, container.firstChild);
+    }
+    console.log(msg);
 }
 
 function escapeHtml(texto) {
@@ -30,442 +30,251 @@ function escapeHtml(texto) {
     return div.innerHTML;
 }
 
-function normalizarTexto(texto) {
-    if (!texto) return '';
-    return texto
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9\s]/g, '');
-}
-
-let todosLosArticulos = [];
-let mapaConceptual = {};
-let conceptoActual = '';
-let relacionesActuales = [];
-let articulosActuales = [];
-let visorArticulos = [];
-let articuloSeleccionado = null;
-let tooltipTimeout = null;
-let tooltipElement = null;
-let detalleElemento = null;
-let visualizador3DActivo = false;
-let datosCargados = false;
-
-const dom = {};
-
-function encontrarConceptoCercano(busqueda) {
-    const busquedaNorm = normalizarTexto(busqueda);
-    if (!busquedaNorm) return null;
+function mostrarDetalleArticulo(artId) {
+    const art = ARTICULOS_DETALLE[String(artId)];
+    if (!art) return;
     
-    let mejorMatch = null;
-    let mejorPuntaje = 0;
-    
-    for (const concepto of Object.keys(mapaConceptual)) {
-        const conceptoNorm = normalizarTexto(concepto);
-        
-        if (conceptoNorm === busquedaNorm) return concepto;
-        
-        if (conceptoNorm.includes(busquedaNorm) || busquedaNorm.includes(conceptoNorm)) {
-            const puntaje = Math.min(conceptoNorm.length, busquedaNorm.length);
-            if (puntaje > mejorPuntaje) {
-                mejorPuntaje = puntaje;
-                mejorMatch = concepto;
-            }
-        }
-    }
-    return mejorMatch;
-}
-
-function obtenerRelaciones(concepto) {
-    const relaciones = mapaConceptual[concepto] || [];
-    return [...relaciones].sort((a, b) => b.frecuencia - a.frecuencia).slice(0, 10);
-}
-
-function obtenerArticulosPorConcepto(concepto) {
-    const conceptoNorm = normalizarTexto(concepto);
-    
-    const conceptosRelacionados = relacionesActuales.map(r => normalizarTexto(r.concepto));
-    const conceptosBusqueda = [conceptoNorm, ...conceptosRelacionados];
-    
-    const resultados = todosLosArticulos.filter(articulo => {
-        const atomos = articulo.atomos_semanticos || [];
-        const atomosNorm = atomos.map(a => normalizarTexto(a));
-        
-        let coincidencias = 0;
-        for (const cb of conceptosBusqueda) {
-            if (atomosNorm.includes(cb)) {
-                coincidencias++;
-            }
-        }
-        return coincidencias >= 2;
-    });
-    
-    if (resultados.length === 0) {
-        console.log('⚠️ Sin resultados con 2 coincidencias, mostrando los que tienen al menos 1');
-        return todosLosArticulos.filter(articulo => {
-            const atomos = articulo.atomos_semanticos || [];
-            const atomosNorm = atomos.map(a => normalizarTexto(a));
-            return atomosNorm.includes(conceptoNorm);
-        });
-    }
-    return resultados;
-}
-
-function navegarAConcepto(nuevoConcepto) {
-    if (!nuevoConcepto) {
-        console.warn('navegarAConcepto: concepto vacío');
-        return;
-    }
-    
-    if (!datosCargados) {
-        console.warn('Datos aún no cargados, esperando...');
-        setTimeout(() => navegarAConcepto(nuevoConcepto), 500);
-        return;
-    }
-    
-    console.log(`🔍 Navegando a: "${nuevoConcepto}"`);
-    
-    conceptoActual = nuevoConcepto;
-    relacionesActuales = obtenerRelaciones(conceptoActual);
-    
-    cerrarDetalleIntegrado();
-    ocultarVisor();
-    
-    if (!visualizador3DActivo) {
-        console.log('Inicializando visualizador 3D por primera vez...');
-        const success = initThreeVisualizer('visualizacion3d', 'canvas3d');
-        if (success) {
-            visualizador3DActivo = true;
-            console.log('✅ Visualizador 3D iniciado');
-        } else {
-            console.error('❌ Falló la inicialización del visualizador 3D');
-            return;
-        }
-    }
-    
-    const vizSection = document.getElementById('visualizacion3d');
-    if (vizSection) {
-        vizSection.classList.remove('hidden');
-        vizSection.style.display = 'block';
-    }
-    
-    setTimeout(() => {
-        if (conceptoActual && relacionesActuales && relacionesActuales.length > 0) {
-            console.log(`🎨 Actualizando visualizador con: "${conceptoActual}" (${relacionesActuales.length} relaciones)`);
-            try {
-                actualizarVisualizador3D(
-                    conceptoActual, 
-                    relacionesActuales,
-                    (concepto) => navegarAConcepto(concepto),
-                    () => mostrarVisor()
-                );
-            } catch (error) {
-                console.error('Error al actualizar visualizador:', error);
-            }
-        }
-    }, 150);
-}
-
-function mostrarTooltipArticulo(event, card) {
-    const textoPreview = card.dataset.texto || 'Vista previa no disponible';
-    
-    tooltipTimeout = setTimeout(() => {
-        if (!tooltipElement) {
-            tooltipElement = document.createElement('div');
-            tooltipElement.className = 'articulo-tooltip';
-            document.body.appendChild(tooltipElement);
-        }
-        
-        tooltipElement.innerHTML = `
-            <div class="tooltip-titulo">📖 VISTA PREVIA</div>
-            <div>${escapeHtml(textoPreview.substring(0, 300))}...</div>
+    let panel = document.getElementById('panelDetalleInferior');
+    if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'panelDetalleInferior';
+        panel.style.cssText = `
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #0a0a1a;
+            border-top: 3px solid #ffcc66;
+            z-index: 10001;
+            transform: translateY(0);
+            max-height: 50vh;
+            overflow-y: auto;
+            display: block;
         `;
-        
-        tooltipElement.style.left = (event.clientX + 15) + 'px';
-        tooltipElement.style.top = (event.clientY + 15) + 'px';
-        tooltipElement.classList.add('visible');
-    }, 400);
-}
-
-function moverTooltip(event) {
-    if (tooltipElement && tooltipElement.classList.contains('visible')) {
-        tooltipElement.style.left = (event.clientX + 15) + 'px';
-        tooltipElement.style.top = (event.clientY + 15) + 'px';
-    }
-}
-
-function ocultarTooltip() {
-    if (tooltipTimeout) clearTimeout(tooltipTimeout);
-    if (tooltipElement) tooltipElement.classList.remove('visible');
-}
-
-async function mostrarVisor() {
-    if (!conceptoActual) {
-        alert('Primero explora un concepto en el mapa 3D');
-        return;
-    }
-    
-    articulosActuales = obtenerArticulosPorConcepto(conceptoActual);
-    
-    if (articulosActuales.length === 0) {
-        alert(`No hay artículos relacionados con "${conceptoActual}"`);
-        return;
-    }
-    
-    visorArticulos = articulosActuales;
-    dom.visorSection.classList.remove('hidden');
-    dom.visorInfo.textContent = `${visorArticulos.length} artículos encontrados`;
-    renderizarVisorVertical();
-}
-
-function renderizarVisorVertical() {
-    let html = '';
-    
-    // Obtener los conceptos de búsqueda para resaltar
-    const conceptoNorm = normalizarTexto(conceptoActual);
-    const conceptosRelacionados = relacionesActuales.map(r => normalizarTexto(r.concepto));
-    const conceptosBusqueda = [conceptoNorm, ...conceptosRelacionados];
-    
-    for (let i = 0; i < visorArticulos.length; i++) {
-        const art = visorArticulos[i];
-        const nombreLey = obtenerNombreLey(art.nombre_ley);
-        
-        // Texto del artículo con palabras resaltadas
-        let textoPreview = art.texto_integro ? art.texto_integro.substring(0, 350) + '...' : 'Texto no disponible';
-        
-        // Resaltar palabras que coinciden con los conceptos de búsqueda
-        for (const concepto of conceptosBusqueda) {
-            const regex = new RegExp(`(${concepto})`, 'gi');
-            textoPreview = textoPreview.replace(regex, `<mark style="background: #ffcc66; color: #1a2a4a; padding: 0 2px; border-radius: 4px;">$1</mark>`);
-        }
-        
-        html += `
-            <div class="articulo-card" data-id="${art.id}" data-texto="${escapeHtml(art.texto_integro || '')}">
-                <div class="articulo-card-ley">📚 ${escapeHtml(nombreLey)} · Artículo ${art.numero || '?'}</div>
-                <div class="articulo-card-texto" style="font-size: 0.8rem; color: #334155; margin-top: 8px; line-height: 1.4;">${textoPreview}</div>
+        panel.innerHTML = `
+            <div style="padding: 1rem 1.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #2a2a4a;">
+                    <h2 id="detalleTitulo" style="color: #ffcc66; font-size: 1rem; margin: 0;">Detalle del artículo</h2>
+                    <button id="btnCerrarDetalleInf" style="background: none; border: none; color: #888; font-size: 1.2rem; cursor: pointer;">✕</button>
+                </div>
+                <div id="detalleJerarquiaInf"></div>
+                <div id="detalleContenidoInf"></div>
+                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.8rem;">
+                    <button id="btnCopiarDetalleInf" style="background: #1a1e26; border: 1px solid #2c3140; padding: 0.4rem 1rem; border-radius: 20px; cursor: pointer; font-size: 0.75rem; color: #4fc3f7;">📋 Copiar texto</button>
+                </div>
             </div>
         `;
-    }
-    
-    dom.visorContainer.innerHTML = html;
-    
-    document.querySelectorAll('.articulo-card').forEach(card => {
-        card.style.cursor = 'pointer';
-        card.addEventListener('click', () => {
-            const id = parseInt(card.dataset.id);
-            const articulo = visorArticulos.find(a => a.id === id);
-            if (articulo) mostrarDetalleIntegrado(articulo);
-        });
+        document.body.appendChild(panel);
         
-        card.addEventListener('mouseenter', (e) => mostrarTooltipArticulo(e, card));
-        card.addEventListener('mouseleave', ocultarTooltip);
-        card.addEventListener('mousemove', (e) => moverTooltip(e));
-    });
-}
-
-function ocultarVisor() {
-    dom.visorSection.classList.add('hidden');
-    visorArticulos = [];
-    cerrarDetalleIntegrado();
-    ocultarTooltip();
-}
-
-function mostrarDetalleIntegrado(articulo) {
-    articuloSeleccionado = articulo;
-    cerrarDetalleIntegrado();
-    
-    const nombreLey = obtenerNombreLey(articulo.nombre_ley);
-    
-    const conceptoNorm = normalizarTexto(conceptoActual);
-    const conceptosRelacionados = relacionesActuales.map(r => normalizarTexto(r.concepto));
-    const conceptosBusqueda = [conceptoNorm, ...conceptosRelacionados];
-    
-    let textoIntegro = articulo.texto_integro || 'Texto no disponible';
-    for (const concepto of conceptosBusqueda) {
-        const regex = new RegExp(`(${concepto})`, 'gi');
-        textoIntegro = textoIntegro.replace(regex, `<mark style="background: #fff3b0; color: #1a2a4a; padding: 0 2px; border-radius: 4px;">$1</mark>`);
+        document.getElementById('btnCerrarDetalleInf').onclick = () => {
+            panel.style.display = 'none';
+        };
+        document.getElementById('btnCopiarDetalleInf').onclick = () => {
+            if (window.artActual && window.artIdActual) {
+                let texto = `${window.artActual.titulo} - ${window.artActual.titulo_descripcion}\n`;
+                texto += `${window.artActual.capitulo} - ${window.artActual.capitulo_descripcion}\n`;
+                if (window.artActual.seccion) texto += `${window.artActual.seccion} - ${window.artActual.seccion_descripcion || ''}\n`;
+                texto += `\nArtículo ${window.artIdActual}\n\n${window.artActual.texto_completo}`;
+                navigator.clipboard.writeText(texto);
+                addLog('✓ Artículo copiado');
+            }
+        };
     }
     
-    const detalleHtml = `
-        <div id="detalleIntegrado" class="detalle-integrado">
-            <div class="detalle-integrado-header">
-                <h4>📜 ${escapeHtml(nombreLey)} · Artículo ${articulo.numero || '?'}</h4>
-                <button id="detalleIntegradoCerrar" class="detalle-integrado-cerrar">✖️ Cerrar</button>
-            </div>
-            <div class="detalle-integrado-contenido">
-                <p>${textoIntegro}</p>
-            </div>
-            <div class="detalle-integrado-footer">
-                <button id="detalleIntegradoPDF" class="detalle-integrado-pdf">📄 Guardar PDF</button>
-            </div>
+    panel.style.display = 'block';
+    
+    document.getElementById('detalleTitulo').textContent = `Artículo ${artId}`;
+    document.getElementById('detalleJerarquiaInf').innerHTML = `
+        <div style="margin-bottom: 0.5rem;">
+            <div style="font-size: 0.65rem; text-transform: uppercase; color: #ffcc66;">TÍTULO</div>
+            <div style="font-size: 0.9rem; font-weight: 500; color: #fff;">${escapeHtml(art.titulo)}</div>
+            <div style="font-size: 0.75rem; color: #888;">${escapeHtml(art.titulo_descripcion)}</div>
         </div>
+        <div style="margin-bottom: 0.5rem;">
+            <div style="font-size: 0.65rem; text-transform: uppercase; color: #ffcc66;">CAPÍTULO</div>
+            <div style="font-size: 0.9rem; font-weight: 500; color: #fff;">${escapeHtml(art.capitulo)}</div>
+            <div style="font-size: 0.75rem; color: #888;">${escapeHtml(art.capitulo_descripcion)}</div>
+        </div>
+        ${art.seccion ? `
+        <div style="margin-bottom: 0.5rem;">
+            <div style="font-size: 0.65rem; text-transform: uppercase; color: #ffcc66;">SECCIÓN</div>
+            <div style="font-size: 0.9rem; font-weight: 500; color: #fff;">${escapeHtml(art.seccion)}</div>
+            <div style="font-size: 0.75rem; color: #888;">${escapeHtml(art.seccion_descripcion || '')}</div>
+        </div>
+        ` : ''}
+    `;
+    document.getElementById('detalleContenidoInf').innerHTML = `
+        <div style="font-size: 0.9rem; font-weight: bold; color: #ffcc66; margin: 0.5rem 0;">Artículo ${artId}</div>
+        <div style="font-size: 0.85rem; line-height: 1.6; color: #ccc; background: #0a0c12; padding: 0.8rem; border-radius: 8px; max-height: 200px; overflow-y: auto;">${escapeHtml(art.texto_completo).replace(/\n/g, '<br>')}</div>
     `;
     
-    dom.visorSection.insertAdjacentHTML('afterend', detalleHtml);
-    detalleElemento = document.getElementById('detalleIntegrado');
-    
-    document.getElementById('detalleIntegradoCerrar').addEventListener('click', cerrarDetalleIntegrado);
-    document.getElementById('detalleIntegradoPDF').addEventListener('click', () => guardarPDF(articulo));
-    
-    detalleElemento.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    window.artActual = art;
+    window.artIdActual = artId;
 }
 
-
-function cerrarDetalleIntegrado() {
-    if (detalleElemento) {
-        detalleElemento.remove();
-        detalleElemento = null;
-    }
-    articuloSeleccionado = null;
-}
-
-function guardarPDF(articulo) {
-    if (!articulo) {
-        alert('No hay ningún artículo seleccionado');
+function mostrarArticulos() {
+    if (!conceptoActual) return;
+    
+    const nodoData = NODOS_ARTICULOS.find(n => n.id === conceptoActual.id);
+    if (!nodoData || !nodoData.articulos) {
+        addLog(`⚠️ No hay artículos para ${conceptoActual.centro_label}`);
         return;
     }
     
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    
-    const nombreLey = obtenerNombreLey(articulo.nombre_ley);
-    const titulo = `${nombreLey} · Artículo ${articulo.numero || '?'}`;
-    doc.setFontSize(16);
-    doc.text(titulo, 20, 20);
-    
-    doc.setFontSize(12);
-    let y = 40;
-    
-    const textoCompleto = articulo.texto_integro || 'Texto no disponible';
-    const lineas = doc.splitTextToSize(textoCompleto, 170);
-    
-    for (let i = 0; i < lineas.length; i++) {
-        if (y > 280) {
-            doc.addPage();
-            y = 20;
-        }
-        doc.text(lineas[i], 20, y);
-        y += 7;
+    // Crear panel lateral si no existe
+    if (!panelArticulos) {
+        panelArticulos = document.createElement('div');
+        panelArticulos.id = 'panelArticulosLateral';
+        panelArticulos.style.cssText = `
+            position: fixed;
+            top: 80px;
+            right: 0;
+            bottom: 0;
+            width: 380px;
+            background: #1a1a3a;
+            border-left: 3px solid #ffcc66;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -4px 0 20px rgba(0,0,0,0.5);
+        `;
+        panelArticulos.innerHTML = `
+            <div style="padding: 1rem; border-bottom: 1px solid #ffcc66; display: flex; justify-content: space-between;">
+                <h3 style="color: #ffcc66; margin: 0;"><i class="fas fa-file-alt"></i> <span id="panelNodoNombreLat">Artículos relacionados</span></h3>
+                <button id="btnCerrarPanelLat" style="background: none; border: none; color: #ffcc66; font-size: 1.2rem; cursor: pointer;">✕</button>
+            </div>
+            <div id="scrollArticulosLat" style="flex: 1; overflow-y: auto; padding: 1rem;"></div>
+        `;
+        document.body.appendChild(panelArticulos);
+        document.getElementById('btnCerrarPanelLat').onclick = () => {
+            panelArticulos.style.display = 'none';
+        };
     }
     
-    doc.save(`articulo_${articulo.id}_${articulo.nombre_ley || 'ley'}.pdf`);
-}
-
-async function cargarDatos() {
-    try {
-        console.log('🔄 Cargando datos desde el backend...');
-        
-        const resArticulos = await fetch(`${API_BASE}/exportar/articulos`);
-        if (!resArticulos.ok) throw new Error(`HTTP ${resArticulos.status}`);
-        const dataArticulos = await resArticulos.json();
-        todosLosArticulos = dataArticulos.articulos || [];
-        console.log(`✅ Artículos: ${todosLosArticulos.length}`);
-        
-        const resMapa = await fetch(`${API_BASE}/exportar/coocurrencias`);
-        if (!resMapa.ok) throw new Error(`HTTP ${resMapa.status}`);
-        mapaConceptual = await resMapa.json();
-        console.log(`✅ Conceptos: ${Object.keys(mapaConceptual).length}`);
-        
-        datosCargados = true;
-        console.log('✅ Todos los datos cargados correctamente');
-        
-        if (dom.btnBuscar) {
-            dom.btnBuscar.disabled = false;
-            dom.btnBuscar.textContent = 'Explorar';
-        }
-        
-    } catch (error) {
-        console.error('❌ Error cargando datos:', error);
-        alert('Error al cargar los datos. Verifica que el servidor esté corriendo.');
-        if (dom.btnBuscar) {
-            dom.btnBuscar.disabled = false;
-            dom.btnBuscar.textContent = 'Error - Recargar';
-        }
-    }
-}
-
-function capturarElementosDOM() {
-    dom.inputConcepto = document.getElementById('inputConcepto');
-    dom.btnBuscar = document.getElementById('btnBuscar');
-    dom.visorSection = document.getElementById('visorSection');
-    dom.visorContainer = document.getElementById('visorContainer');
-    dom.visorInfo = document.getElementById('visorInfo');
-    dom.btnCerrarVisor = document.getElementById('btnCerrarVisor');
+    panelArticulos.style.display = 'flex';
     
-    if (dom.btnBuscar) {
-        dom.btnBuscar.disabled = true;
-        dom.btnBuscar.textContent = 'Cargando...';
-    }
-}
-
-function configurarEventos() {
-    dom.btnBuscar.addEventListener('click', () => {
-        if (!datosCargados) {
-            alert('Los datos aún se están cargando. Espera un momento.');
-            return;
-        }
+    const scrollContainer = document.getElementById('scrollArticulosLat');
+    const panelNodoNombre = document.getElementById('panelNodoNombreLat');
+    
+    panelNodoNombre.textContent = `Artículos relacionados con ${conceptoActual.centro_label}`;
+    scrollContainer.innerHTML = '';
+    
+    nodoData.articulos.forEach(artId => {
+        const art = ARTICULOS_DETALLE[String(artId)];
+        if (!art) return;
         
-        let concepto = dom.inputConcepto.value.trim().toLowerCase();
-        if (!concepto) {
-            alert('Escribe un concepto para buscar');
-            return;
-        }
-        
-        let conceptoEncontrado = encontrarConceptoCercano(concepto);
-        
-        if (!conceptoEncontrado) {
-            alert(`No se encontró "${concepto}". Sugerencias: tutela, alimentos, garantías, patria potestad, amparo`);
-            return;
-        }
-        
-        if (conceptoEncontrado !== concepto) {
-            console.log(`🔍 Corregido: "${concepto}" → "${conceptoEncontrado}"`);
-        }
-        
-        navegarAConcepto(conceptoEncontrado);
+        const preview = art.texto_completo.substring(0, 100) + '...';
+        const item = document.createElement('div');
+        item.style.cssText = `
+            background: #0a0a1a;
+            border: 1px solid #2a2a4a;
+            border-radius: 8px;
+            padding: 0.8rem;
+            margin-bottom: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        `;
+        item.innerHTML = `
+            <div style="color: #ffcc66; font-size: 0.8rem; font-weight: bold; margin-bottom: 0.3rem;">📜 Artículo ${artId}</div>
+            <div style="color: #aaa; font-size: 0.7rem; line-height: 1.4;">${escapeHtml(preview)}</div>
+        `;
+        item.ondblclick = () => mostrarDetalleArticulo(artId);
+        scrollContainer.appendChild(item);
     });
     
-    dom.inputConcepto.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && datosCargados) {
-            dom.btnBuscar.click();
-        }
-    });
+    addLog(`📄 Mostrados ${nodoData.articulos.length} artículos`);
+}
+
+function actualizarUI() {
+    if (!conceptoActual) return;
     
-    if (dom.btnCerrarVisor) {
-        dom.btnCerrarVisor.addEventListener('click', ocultarVisor);
+    document.getElementById('conceptoPrincipalValue').textContent = conceptoActual.centro_label;
+    document.getElementById('conceptoPrincipalSection').classList.remove('hidden');
+    
+    const satelites = obtenerSatelitesEnriquecidos(conceptoActual, GRAFOS_DATA);
+    const relContainer = document.getElementById('relacionesContainer');
+    document.getElementById('relacionesSection').classList.remove('hidden');
+    document.getElementById('relacionesCount').textContent = satelites.length;
+    
+    if (satelites.length > 0) {
+        relContainer.innerHTML = satelites.map(rel => `
+            <div class="relacion-btn" data-concepto="${rel.label_corto}" style="cursor: pointer;">${rel.label_corto} (${rel.peso})</div>
+        `).join('');
+        
+        document.querySelectorAll('.relacion-btn').forEach(btn => {
+            btn.onclick = () => {
+                const nodo = encontrarConcepto(btn.dataset.concepto, GRAFOS_DATA);
+                if (nodo) {
+                    conceptoActual = nodo;
+                    actualizarUI();
+                }
+            };
+        });
+    }
+    
+    if (!visualizadorInicializado) {
+        visualizadorInicializado = initThreeVisualizer('visualizacion3d', 'canvas3d');
+    }
+    
+    if (visualizadorInicializado) {
+        setTimeout(() => {
+            actualizarVisualizador3D(
+                conceptoActual.texto_esfera || conceptoActual.centro_label,
+                satelites.map(s => ({ label_corto: s.label_corto, concepto: s.centro_label, capa: s.capa, peso: s.peso })),
+                (conceptoNombre) => {
+                    const nodo = encontrarConcepto(conceptoNombre, GRAFOS_DATA);
+                    if (nodo) {
+                        conceptoActual = nodo;
+                        actualizarUI();
+                    }
+                }
+            );
+        }, 100);
+    }
+    
+    const btnAtras = document.getElementById('btnAtras');
+    if (btnAtras) btnAtras.style.display = historial.length > 0 ? 'inline-flex' : 'none';
+}
+
+function navegarA(nuevoNodo, guardar = true) {
+    if (!nuevoNodo) return;
+    if (guardar && conceptoActual) historial.push(conceptoActual);
+    conceptoActual = nuevoNodo;
+    actualizarUI();
+    if (panelArticulos) panelArticulos.style.display = 'none';
+}
+
+function irAtras() {
+    if (historial.length > 0) {
+        const anterior = historial.pop();
+        navegarA(anterior, false);
     }
 }
 
-function agregarBotonMostrar() {
-    const vizSection = document.getElementById('visualizacion3d');
-    if (!vizSection) return;
-    
-    if (document.getElementById('btnMostrarArticulosContainer')) return;
-    
-    const container = document.createElement('div');
-    container.id = 'btnMostrarArticulosContainer';
-    container.style.display = 'flex';
-    container.style.justifyContent = 'center';
-    container.style.marginTop = '20px';
-    container.style.marginBottom = '20px';
-    
-    const btn = document.createElement('button');
-    btn.className = 'buscador-btn';
-    btn.innerHTML = '<i class="fas fa-file-alt"></i> Mostrar artículos relacionados';
-    btn.addEventListener('click', mostrarVisor);
-    
-    container.appendChild(btn);
-    vizSection.insertAdjacentElement('afterend', container);
+function reiniciar() {
+    historial = [];
+    const demanda = GRAFOS_DATA.find(n => n.id === 1);
+    if (demanda) navegarA(demanda, false);
 }
 
-async function init() {
-    console.log('🚀 Iniciando Explorador Semántico...');
-    capturarElementosDOM();
-    configurarEventos();
-    await cargarDatos();
-    agregarBotonMostrar();
-    console.log('✅ Listo para usar - Busca un concepto');
+function buscar() {
+    const consulta = document.getElementById('inputConcepto').value.trim();
+    if (!consulta) return;
+    const nodo = encontrarConcepto(consulta, GRAFOS_DATA);
+    if (nodo) navegarA(nodo, true);
 }
 
-document.addEventListener('DOMContentLoaded', init);
+function init() {
+    document.getElementById('btnBuscar').onclick = buscar;
+    document.getElementById('inputConcepto').onkeypress = (e) => { if (e.key === 'Enter') buscar(); };
+    document.getElementById('btnAtras').onclick = irAtras;
+    document.getElementById('btnReset').onclick = reiniciar;
+    document.getElementById('btnMostrarArticulos').onclick = mostrarArticulos;
+    
+    const demanda = GRAFOS_DATA.find(n => n.id === 1);
+    if (demanda) navegarA(demanda, false);
+    
+    addLog('✅ Aplicación lista. El panel de artículos aparecerá a la DERECHA.');
+}
+
+init();
