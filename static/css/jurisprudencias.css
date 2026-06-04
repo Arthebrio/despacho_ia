@@ -144,10 +144,7 @@ main.container-mobile {
     cursor: pointer;
     transition: all 0.2s ease;
 }
-.tesis-card:hover {
-    background-color: #f8fafc;
-    padding-left: 12px; /* Efecto sutil de desplazamiento */
-}
+
 .meta-line {
     display: flex;
     flex-wrap: wrap;

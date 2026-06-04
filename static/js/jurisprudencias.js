@@ -183,7 +183,7 @@ function renderizarListado() {
     DOM.listadoContainer.innerHTML = html;
 }
 
-DOM.listadoContainer.addEventListener('click', (e) => {
+DOM.listadoContainer.addEventListener('dblclick', (e) => {
     const card = e.target.closest('.tesis-card');
     if (!card) return;
     const tdata = AppState.tesisFiltradas.find(t => t.id == card.dataset.id);
@@ -313,6 +313,10 @@ function cerrarDetalle() {
     AppState.tesisSeleccionada = null;
     document.body.style.overflow = ''; // Libera el listado
 }
+
+
+
+
 
 // ============================================
 // EXPORTACIÓN PDF
